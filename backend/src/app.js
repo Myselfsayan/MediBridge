@@ -22,10 +22,10 @@ app.use("/api/v1/status", (req, res) =>
 );
 
 
-import userRouter from "./routes/user.routes.js";
+import adminRouter from "./routes/admin.route.js";
 
 
-app.use("/api/v1/auth", userRouter);
+app.use("/api/v1/admin", adminRouter);
 
 
 

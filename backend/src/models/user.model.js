@@ -93,7 +93,5 @@ const userSchema = new mongoose.Schema(
     // Faster query performance
     userSchema.index({ email: 1 });
 
-    const userModel =
-    mongoose.models.user || mongoose.model("user", userSchema);
+    export const User = mongoose.models.user || mongoose.model("user", userSchema);
 
-export default userModel;
