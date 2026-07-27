@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Doctor } from "../models/doctor.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import jwt from "jsonwebtoken";
 
 const addDoctor = asyncHandler(async (req, res) => {
 
@@ -77,4 +78,61 @@ const addDoctor = asyncHandler(async (req, res) => {
     );
 });
 
-export { addDoctor };
+// API For The Admin Panel
+const loginAdmin = asyncHandler(async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        throw new ApiError(400, "Email and password are required");
+    }
+
+    if (
+        email !== process.env.ADMIN_EMAIL ||
+        password !== process.env.ADMIN_PASSWORD
+    ) {
+        throw new ApiError(401, "Invalid credentials");
+    }
+
+    const payload = {
+    _id: "admin",
+    email,
+    role: "admin",
+};
+
+const accessToken = jwt.sign(
+    payload,
+    process.env.ACCESS_TOKEN_SECRET,
+    {
+        expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
+    }
+);
+
+const refreshToken = jwt.sign(
+    payload,
+    process.env.REFRESH_TOKEN_SECRET,
+    {
+        expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
+    }
+);
+
+    return res
+        .status(200)
+        .cookie("accessToken", accessToken, accessCookieOptions)
+        .cookie("refreshToken", refreshToken, refreshCookieOptions)
+        .json(
+            new ApiResponse(
+                200,
+                {
+                    accessToken,
+                    refreshToken,
+                    admin: {
+                        email,
+                        role: "admin",
+                    },
+                },
+                "Admin logged in successfully"
+            )
+        );
+});
+
+export { addDoctor , loginAdmin };
