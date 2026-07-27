@@ -79,6 +79,20 @@ const addDoctor = asyncHandler(async (req, res) => {
 });
 
 // API For The Admin Panel
+const accessCookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 1000 * 60 * 60 * 24, // 1 day
+};
+
+const refreshCookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+};
+
 const loginAdmin = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
 
@@ -94,26 +108,26 @@ const loginAdmin = asyncHandler(async (req, res) => {
     }
 
     const payload = {
-    _id: "admin",
-    email,
-    role: "admin",
-};
+        _id: "admin",
+        email,
+        role: "admin",
+    };
 
-const accessToken = jwt.sign(
-    payload,
-    process.env.ACCESS_TOKEN_SECRET,
-    {
-        expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
-    }
-);
+    const accessToken = jwt.sign(
+        payload,
+        process.env.ACCESS_TOKEN_SECRET,
+        {
+            expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
+        }
+    );
 
-const refreshToken = jwt.sign(
-    payload,
-    process.env.REFRESH_TOKEN_SECRET,
-    {
-        expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
-    }
-);
+    const refreshToken = jwt.sign(
+        payload,
+        process.env.REFRESH_TOKEN_SECRET,
+        {
+            expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
+        }
+    );
 
     return res
         .status(200)
