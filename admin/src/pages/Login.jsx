@@ -2,6 +2,8 @@ import  { useState } from 'react';
 //import { assets } from '../assets/assets';
 import { useContext } from 'react';
 import { AdminContext } from '../context/AdminContext.jsx';
+import axios from 'axios';
+import {toast} from 'react-toastify';
 
 const Login = () => {
   const [state, setState] = useState('Admin');
@@ -11,8 +13,43 @@ const Login = () => {
 
   const { setAToken, backendUrl } = useContext(AdminContext);
 
+  const onSubmitHandler = async (e)=>{
+    e.preventDefault();
+    try {
+
+    if (state === "Admin") {
+
+        const { data } = await axios.post(
+            backendUrl + "/api/v1/admin/login",
+            { email, password }
+        );
+
+        if (data.success) {
+            localStorage.setItem("aToken", data.data.accessToken);
+            setAToken(data.data.accessToken);
+            console.log(data);
+            }
+            else{
+              console.log(data.message);
+              toast.error(data.data.message);
+            }
+
+
+    } else {
+
+    }
+
+} catch (error) {
+   console.log(error.response);
+
+    toast.error(
+        error.response?.data?.message || "Invalid credentials"
+    );
+}
+  }
+
   return (
-  <form className="min-h-[80vh] flex items-center ">
+  <form onSubmit={onSubmitHandler} className="min-h-[80vh] flex items-center ">
     <div className="flex flex-col gap-3 m-auto items-start p-8 min-w-[340px] sm:min-w-96 border rounded-xl text-zinc-600 text-sm shadow-lg">
       <p className="text-2xl font-semibold m-auto">
         <span className="text-primary">{state}</span> Login
@@ -23,7 +60,7 @@ const Login = () => {
         <input
           className="border border-[#DADADA] rounded w-full p-2 mt-1"
           type="email"
-          onClick={(e)=>setEmail(e.target.value)}
+          onChange={(e)=>setEmail(e.target.value)}
           value={email}
           required
         />
@@ -34,6 +71,8 @@ const Login = () => {
         <input
           className="border border-[#DADADA] rounded w-full p-2 mt-1"
           type="password"
+          onChange={(e)=>setPassword(e.target.value)}
+          value={password}
           required
         />
       </div>
