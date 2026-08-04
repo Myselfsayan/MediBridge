@@ -77,7 +77,7 @@ const Login = () => {
         />
       </div>
 
-      <button className="bg-primary bg-blue-400 text-white  w-full py-2  rounded-md text-base">
+      <button className="bg-primary  text-white  w-full py-2  rounded-md text-base">
         Login
       </button>
 
