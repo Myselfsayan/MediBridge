@@ -7,5 +7,6 @@ const adminRouter = express.Router();
 
 adminRouter.post('/add-doctor',verifyJWT,upload.single('image'),addDoctor);
 adminRouter.post('/login',loginAdmin);
+adminRouter.get('/all-doctors',verifyJWT,allDoctors);
 
 export default adminRouter;

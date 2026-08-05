@@ -54,7 +54,7 @@ const addDoctor = asyncHandler(async (req, res) => {
     if (existingDoctor) {
         throw new ApiError(409, "Doctor already exists");
     }
-
+    const parsedAddress = JSON.parse(address);
     // Create doctor
     const doctor = await Doctor.create({
         name,
@@ -65,7 +65,7 @@ const addDoctor = asyncHandler(async (req, res) => {
         experience,
         about,
         fees,
-        address,
+        address:parsedAddress,
         image: uploadedImage.secure_url // Cloudinary URL
     });
 
@@ -147,6 +147,18 @@ const loginAdmin = asyncHandler(async (req, res) => {
                 "Admin logged in successfully"
             )
         );
+});
+
+//API to get All Doctor list for admin panel
+const allDoctors = asyncHandler(async (req, res) => {
+    const doctors = await Doctor.find().select("-password");
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            doctors,
+            "Doctors fetched successfully"
+        )
+    );
 });
 
 export { addDoctor , loginAdmin };
