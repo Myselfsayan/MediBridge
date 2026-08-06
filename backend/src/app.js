@@ -23,9 +23,11 @@ app.use("/api/v1/status", (req, res) =>
 
 
 import adminRouter from "./routes/admin.route.js";
+import doctorRouter from "./routes/doctor.route.js";
 
 
 app.use("/api/v1/admin", adminRouter);
+app.use("/api/v1/doctor", doctorRouter);
 
 
 
