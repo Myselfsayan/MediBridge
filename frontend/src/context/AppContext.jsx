@@ -10,12 +10,25 @@ const AppContextProvider = (props) => {
     const currencySymbol = "₹";
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
     const [doctors, setDoctors] = useState([]);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-    const value = {
-        doctors,
-        currencySymbol,
-        backendUrl
-    };
+    const checkAuth = async () => {
+    try {
+        const { data } = await axios.get(
+            `${backendUrl}/api/v1/user/current-user`,
+            {
+                withCredentials: true,
+            }
+        );
+
+        if (data.success) {
+            setIsLoggedIn(true);
+        }
+    } catch (error) {
+        setIsLoggedIn(false);
+    }
+};
+    
     const getDoctorsData = async () => {
         try {
             const { data } = await axios.get(
@@ -31,8 +44,18 @@ const AppContextProvider = (props) => {
             toast.error(error.response?.data?.message || error.message);
         }
     };
+    
+        const value = {
+            doctors,
+            currencySymbol,
+            backendUrl,
+            isLoggedIn,
+            setIsLoggedIn
+        };
+
     useEffect(() => {
         getDoctorsData();
+        checkAuth();
     }, []);
 
     return (
