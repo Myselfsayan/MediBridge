@@ -9,8 +9,7 @@ const Navbar = () => {
 
     const [showMenu, setShowMenu] = useState(false);
 
-const { isLoggedIn, setIsLoggedIn, backendUrl } =
-    useContext(AppContext);
+const { isLoggedIn, setIsLoggedIn, backendUrl , userData } = useContext(AppContext);
 
 const handleLogout = async () => {
     try {
@@ -83,11 +82,12 @@ const handleLogout = async () => {
                     <div className="flex items-center gap-2 cursor-pointer group relative">
 
                         <img
-                            className="w-8 rounded-full"
-                            src={assets.profile_pic}
-                            alt=""
+                            className="w-8 h-8 rounded-full object-cover"
+                            src={userData?.image || assets.default_avatar}
+                            alt="User avatar"
+                            
                         />
-
+                        
                         <img
                             className="w-2.5"
                             src={assets.dropdown_icon}

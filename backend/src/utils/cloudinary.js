@@ -9,20 +9,43 @@ cloudinary.config({
 });
 
 const uploadOnCloudinary = async (localFilePath) => {
-try {
-    if (!localFilePath) return null;
-    //Upload file on Cloudinary
-    const response = await cloudinary.uploader.upload(localFilePath, {
-        resource_type: "auto",
-    });
-    //File uploaded successfully
-    //console.log("File is uploaded successfully on Cloudinary",response.url);
-    fs.unlinkSync(localFilePath);
-    return response;
-} catch (error) {
-    fs.unlinkSync(localFilePath); //Removed the locally saved temporary file as the upload operation got failed
-    return null;
-}
+    try {
+        if (!localFilePath) return null;
+
+        console.log("Uploading to Cloudinary:", localFilePath);
+
+        const response = await cloudinary.uploader.upload(
+            localFilePath,
+            {
+                resource_type: "auto",
+            }
+        );
+
+        console.log(
+            "Cloudinary upload successful:",
+            response.secure_url
+        );
+
+        // Delete temporary file after successful upload
+        if (fs.existsSync(localFilePath)) {
+            fs.unlinkSync(localFilePath);
+        }
+
+        return response;
+
+    } catch (error) {
+        console.error(
+            "Cloudinary upload error:",
+            error
+        );
+
+        // Delete temporary file if upload failed
+        if (localFilePath && fs.existsSync(localFilePath)) {
+            fs.unlinkSync(localFilePath);
+        }
+
+        return null;
+    }
 };
 
     const deleteFromCloudinary = async (publicId) => {
@@ -33,5 +56,46 @@ try {
         return null;
     }
 }
+const getPublicIdFromUrl = (imageUrl) => {
+    try {
+        if (!imageUrl) return null;
 
-export { uploadOnCloudinary, deleteFromCloudinary };
+        const url = new URL(imageUrl);
+
+        const parts = url.pathname.split("/");
+        const uploadIndex = parts.indexOf("upload");
+
+        if (uploadIndex === -1) {
+            return null;
+        }
+
+        let publicIdParts = parts.slice(uploadIndex + 1);
+
+        // Remove version, e.g. v1786285935
+        if (
+            publicIdParts[0]?.startsWith("v") &&
+            !isNaN(publicIdParts[0].slice(1))
+        ) {
+            publicIdParts.shift();
+        }
+
+        const publicIdWithExtension =
+            publicIdParts.join("/");
+
+        // Remove extension
+        return publicIdWithExtension.replace(
+            /\.[^/.]+$/,
+            ""
+        );
+
+    } catch (error) {
+        console.log(
+            "Error extracting Cloudinary public ID:",
+            error
+        );
+
+        return null;
+    }
+};
+
+export { uploadOnCloudinary, deleteFromCloudinary , getPublicIdFromUrl };
