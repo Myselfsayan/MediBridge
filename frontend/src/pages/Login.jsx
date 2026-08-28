@@ -12,7 +12,7 @@ function Login() {
     const [name, setName] = useState("");
     const navigate = useNavigate();
 
-    const { isLoggedIn, setIsLoggedIn, backendUrl } =
+    const { isLoggedIn, setIsLoggedIn, backendUrl, checkAuth } =
         useContext(AppContext);
 
     const onSubmitHandler = async (event) => {
@@ -52,8 +52,8 @@ function Login() {
                 console.log(data);
                 toast.success(data.message);
 
-                // Login successful
-                setIsLoggedIn(true);
+                // Login successful — fetch user data
+                await checkAuth();
                 navigate("/");
             }
         } catch (error) {

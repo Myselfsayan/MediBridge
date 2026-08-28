@@ -1,11 +1,20 @@
 import jwt from "jsonwebtoken";
 import { User } from "../models/user.model.js";
+import doctorModel from "../models/doctor.model.js";
+import appointmentModel from "../models/appointment.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import {accessCookieOptions,refreshCookieOptions} from "../utils/constant.js";
+import {
+    accessCookieOptions,
+    refreshCookieOptions
+} from "../utils/constant.js";
 import validator from "validator";
-import { uploadOnCloudinary , getPublicIdFromUrl , deleteFromCloudinary } from "../utils/cloudinary.js";
+import {
+    uploadOnCloudinary,
+    getPublicIdFromUrl,
+    deleteFromCloudinary
+} from "../utils/cloudinary.js";
 
 const getCurrentUser = asyncHandler(async (req, res) => {
     return res.status(200).json(
@@ -63,11 +72,6 @@ const registerUser = asyncHandler(async (req, res) => {
 
 const loginUser = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
-    
-    // Check if user is already logged in
-    if (req.cookies?.accessToken) {
-        throw new ApiError(400, "User already logged in");
-    }
 
     // 1. Validate input
     if (!email || !password) {
@@ -147,6 +151,7 @@ const logoutUser = asyncHandler(async (req, res) => {
             )
         );
 });
+
 const refreshAccessToken = asyncHandler(async (req, res) => {
     const incomingRefreshToken = req.cookies?.refreshToken;
 
@@ -161,23 +166,6 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         );
 
         const user = await User.findById(decodedToken._id).select("+refreshToken");
-if (!user) {
-    throw new ApiError(401, "Invalid refresh token");
-}
-
-console.log("Refresh token received:", !!incomingRefreshToken);
-console.log("Refresh token in DB:", !!user.refreshToken);
-console.log(
-    "Tokens match:",
-    incomingRefreshToken === user.refreshToken
-);
-
-if (incomingRefreshToken !== user.refreshToken) {
-    throw new ApiError(
-        401,
-        "Refresh token is invalid or expired"
-    );
-}
 
         if (!user) {
             throw new ApiError(401, "Invalid refresh token");
@@ -191,7 +179,6 @@ if (incomingRefreshToken !== user.refreshToken) {
         }
 
         const newAccessToken = user.generateAccessToken();
-        
 
         return res
             .status(200)
@@ -218,9 +205,8 @@ if (incomingRefreshToken !== user.refreshToken) {
     }
 });
 
-
 const getProfile = asyncHandler(async (req, res) => {
-    const {userId} = req.body;
+    const userId = req.user._id;
     const userData = await User.findById(userId).select("-password");
 
     if (!userData) {
@@ -238,12 +224,84 @@ const getProfile = asyncHandler(async (req, res) => {
     );
 });
 
-const updateProfile = asyncHandler(async (req, res) => {
-    console.log("===== UPDATE PROFILE =====");
-    console.log("REQ.USER:", req.user);
-    console.log("REQ.BODY:", req.body);
-    console.log("REQ.FILE:", req.file);
+// API to Book Appointment
+const bookAppointment = asyncHandler(async (req, res) => {
 
+    const { docId, slotDate, slotTime } = req.body;
+
+    // Get logged-in user ID from authentication middleware
+    const userId = req.user._id;
+
+    // Get doctor data
+    const docData = await doctorModel
+        .findById(docId)
+        .select("-password");
+
+    if (!docData) {
+        throw new ApiError(404, "Doctor not found");
+    }
+
+    if (!docData.available) {
+        throw new ApiError(400, "Doctor not available");
+    }
+
+    // Check slot availability
+    const slots_booked = docData.slots_booked;
+    const bookedSlots = slots_booked.get(slotDate) || [];
+
+    if (bookedSlots.includes(slotTime)) {
+        throw new ApiError(400, "Slot not available");
+    }
+
+    bookedSlots.push(slotTime);
+    slots_booked.set(slotDate, bookedSlots);
+
+    // Get user data
+    const userData = await User
+        .findById(userId)
+        .select("-password");
+
+    if (!userData) {
+        throw new ApiError(404, "User not found");
+    }
+
+    // Remove slots_booked from doctor data before storing in appointment
+    const docDataObj = docData.toObject();
+    delete docDataObj.slots_booked;
+
+    // Create appointment data
+    const appointmentData = {
+        userId,
+        docId,
+        userData,
+        docData: docDataObj,
+        amount: docData.fees,
+        slotTime,
+        slotDate,
+        date: Date.now()
+    };
+
+    const newAppointment = new appointmentModel(appointmentData);
+    await newAppointment.save();
+
+    // Update doctor's booked slots
+    await doctorModel.findByIdAndUpdate(
+        docId,
+        { slots_booked }
+    );
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                appointmentData,
+                "Appointment booked successfully"
+            )
+        );
+});
+
+const updateProfile = asyncHandler(async (req, res) => {
     const userId = req.user._id;
 
     const {
@@ -255,35 +313,23 @@ const updateProfile = asyncHandler(async (req, res) => {
         gender,
     } = req.body;
 
-    // ==========================================
-    // Check current user
-    // ==========================================
-
     const currentUser = await User.findById(userId);
 
     if (!currentUser) {
         throw new ApiError(404, "User not found");
     }
 
-    // ==========================================
-    // Prepare update data
-    // ==========================================
-
     const updateData = {};
 
-    // Name
     if (name !== undefined && name !== "") {
         updateData.name = name;
     }
 
-    // Email
     if (email !== undefined && email !== "") {
-        // Validate email
         if (!validator.isEmail(email)) {
             throw new ApiError(400, "Enter a valid email");
         }
 
-        // Check whether email belongs to another user
         const existingUser = await User.findOne({
             email,
             _id: { $ne: userId },
@@ -296,18 +342,14 @@ const updateProfile = asyncHandler(async (req, res) => {
         updateData.email = email;
     }
 
-    // Phone
     if (phone !== undefined && phone !== "") {
         updateData.phone = phone;
     }
 
-    // Gender
     if (gender !== undefined && gender !== "") {
         updateData.gender = gender;
     }
 
-    // DOB
-    // Only update if a valid value is provided
     if (
         dob !== undefined &&
         dob !== "" &&
@@ -317,7 +359,6 @@ const updateProfile = asyncHandler(async (req, res) => {
         updateData.dob = dob;
     }
 
-    // Address
     if (
         address !== undefined &&
         address !== "" &&
@@ -334,10 +375,6 @@ const updateProfile = asyncHandler(async (req, res) => {
         }
     }
 
-    // ==========================================
-    // Upload new image if selected
-    // ==========================================
-
     let oldImage = currentUser.image;
 
     if (req.file) {
@@ -353,16 +390,7 @@ const updateProfile = asyncHandler(async (req, res) => {
         }
 
         updateData.image = uploadedImage.secure_url;
-
-        console.log(
-            "New image URL:",
-            uploadedImage.secure_url
-        );
     }
-
-    // ==========================================
-    // Check if anything was provided
-    // ==========================================
 
     if (Object.keys(updateData).length === 0) {
         throw new ApiError(
@@ -370,12 +398,6 @@ const updateProfile = asyncHandler(async (req, res) => {
             "No profile data provided for update"
         );
     }
-
-    console.log("UPDATE DATA:", updateData);
-
-    // ==========================================
-    // Update MongoDB
-    // ==========================================
 
     const updatedUser =
         await User.findByIdAndUpdate(
@@ -393,10 +415,6 @@ const updateProfile = asyncHandler(async (req, res) => {
         throw new ApiError(404, "User not found");
     }
 
-    // ==========================================
-    // Response
-    // ==========================================
-
     return res.status(200).json(
         new ApiResponse(
             200,
@@ -408,6 +426,77 @@ const updateProfile = asyncHandler(async (req, res) => {
     );
 });
 
+// API to get user appointments for frontend my-appointments page
+const listAppointment = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    const appointments = await appointmentModel.find({ userId });
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            { appointments },
+            "Appointments fetched successfully"
+        )
+    );
+});
+
+const cancelAppointment = asyncHandler(async (req, res) => {
+    const { userId, appointmentId } = req.body;
+
+    const appointmentData = await appointmentModel.findById(appointmentId);
+
+    if (!appointmentData) {
+        throw new ApiError(404, "Appointment not found");
+    }
+
+    if (appointmentData.userId.toString() !== userId.toString()) {
+        throw new ApiError(401, "Unauthorized action");
+    }
+
+    await appointmentModel.findByIdAndUpdate(
+        appointmentId,
+        { cancelled: true }
+    );
+
+    // releasing doctor slot
+    const { docId, slotDate, slotTime } = appointmentData;
+    const doctorData = await doctorModel.findById(docId);
+
+    if (!doctorData) {
+        throw new ApiError(404, "Doctor not found");
+    }
+
+    const slots_booked = doctorData.slots_booked;
+    const bookedSlots = slots_booked.get(slotDate);
+    if (bookedSlots) {
+        const updatedSlots = bookedSlots.filter(e => e !== slotTime);
+        slots_booked.set(slotDate, updatedSlots);
+    }
+
+    await doctorModel.findByIdAndUpdate(
+        docId,
+        { slots_booked }
+    );
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            null,
+            "Appointment Cancelled"
+        )
+    );
+});
 
 
-export { registerUser, loginUser, logoutUser, getCurrentUser , getProfile, updateProfile , refreshAccessToken};
+export { 
+    registerUser, 
+    loginUser, 
+    logoutUser, 
+    getCurrentUser , 
+    getProfile, 
+    updateProfile , 
+    refreshAccessToken , 
+    bookAppointment, 
+    listAppointment , 
+    cancelAppointment 
+};

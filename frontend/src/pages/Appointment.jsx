@@ -1,73 +1,181 @@
-import React, { useContext, useEffect, useState } from 'react'
+import  { useContext, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { AppContext } from '../context/AppContext'
 import {assets} from '../assets/assets.js'
 import RelatedDoctors from '../components/RelatedDoctors.jsx'
+import axios from 'axios'
+import { toast } from 'react-toastify'
+import { useNavigate } from 'react-router-dom'
 
 function Appointment() {
     const { docId } = useParams()
-    const { doctors , currencySymbol } = useContext(AppContext)
+    const { doctors , currencySymbol , backendUrl  , isLoggedIn  } = useContext(AppContext)
 
     const [docInfo, setDocInfo] = useState(null)
     const [docSlots, setDocSlots] = useState([])
     const [slotIndex, setSlotIndex] = useState(0)
     const [slotTime, setSlotTime] = useState('')
-    const daysOfWeek = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']    
+    const daysOfWeek = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'] 
+    const navigate = useNavigate()   
 
     const fetchDocInfo = async () => {
     const docInfo = doctors.find((doc) => doc._id === docId)
     setDocInfo(docInfo)
     }
 
-    const getAvailableSlots = async () => {
+const getAvailableSlots = async () => {
 
-        setDocSlots([])
+    setDocSlots([]);
 
-        // getting current date
-        let today = new Date()
+    let today = new Date();
+    let allSlots = [];
 
-        for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 7; i++) {
 
-            // getting date with index
-            let currentDate = new Date(today)
-            currentDate.setDate(today.getDate() + i)
+        let currentDate = new Date(today);
+        currentDate.setDate(today.getDate() + i);
 
-            // setting end time of the date with index
-            let endTime = new Date()
-            endTime.setDate(today.getDate() + i)
-            endTime.setHours(21, 0, 0, 0)
+        let endTime = new Date(today);
+        endTime.setDate(today.getDate() + i);
+        endTime.setHours(21, 0, 0, 0);
 
-            // setting hours
-            if (today.getDate() === currentDate.getDate()) {
-            currentDate.setHours(currentDate.getHours() > 10 ? currentDate.getHours() + 1 : 10)
-            currentDate.setMinutes(currentDate.getMinutes() > 30 ? 30 : 0)
-            } else {
-            currentDate.setHours(10)
-            currentDate.setMinutes(0)
-            }
+        // Set starting time
+        if (today.getDate() === currentDate.getDate()) {
 
-            let timeSlots = []
+            currentDate.setHours(
+                currentDate.getHours() > 10
+                    ? currentDate.getHours() + 1
+                    : 10
+            );
 
-            while (currentDate < endTime) {
+            currentDate.setMinutes(
+                currentDate.getMinutes() > 30
+                    ? 30
+                    : 0
+            );
 
-            let formattedTime = currentDate.toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit'
-            })
+        } else {
 
-            // add slot to array
-            timeSlots.push({
-                datetime: new Date(currentDate),
-                time: formattedTime
-            })
-            // incrementing 30 mins for next slot
-            currentDate.setMinutes(currentDate.getMinutes() + 30)
-            }
-            setDocSlots((prev) => [...prev, timeSlots])
+            currentDate.setHours(10);
+            currentDate.setMinutes(0);
 
         }
 
-}
+        let timeSlots = [];
+
+        while (currentDate < endTime) {
+
+            const formattedTime = currentDate.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit"
+            });
+
+            // Create date format: DD_MM_YYYY
+            const day = currentDate.getDate();
+            const month = currentDate.getMonth() + 1;
+            const year = currentDate.getFullYear();
+
+            const slotDate = `${day}_${month}_${year}`;
+
+            // Get already booked slots for this date
+            const bookedSlots =
+                docInfo?.slots_booked?.[slotDate] || [];
+
+            // Check whether this particular time is already booked
+            const isSlotBooked =
+                bookedSlots.includes(formattedTime);
+
+            // Only show available slots
+            if (!isSlotBooked) {
+
+                timeSlots.push({
+                    datetime: new Date(currentDate),
+                    time: formattedTime
+                });
+
+            }
+
+            // Next 30-minute slot
+            currentDate.setMinutes(
+                currentDate.getMinutes() + 30
+            );
+        }
+
+        allSlots.push(timeSlots);
+    }
+
+    setDocSlots(allSlots);
+};
+
+
+
+
+const bookAppointment = async () => {
+
+    if (!isLoggedIn) {
+        toast.warn("Login to book appointment");
+        return navigate("/login");
+    }
+
+    if (!slotTime) {
+        toast.warn("Please select a time slot");
+        return;
+    }
+
+    if (!docSlots[slotIndex] || !docSlots[slotIndex][0]) {
+        toast.warn("Please select a date");
+        return;
+    }
+
+    try {
+
+        const selectedDate =
+            docSlots[slotIndex][0].datetime;
+
+        const day = selectedDate.getDate();
+        const month = selectedDate.getMonth() + 1;
+        const year = selectedDate.getFullYear();
+
+        const slotDate =
+            `${day}_${month}_${year}`;
+
+        const { data } = await axios.post(
+            `${backendUrl}/api/v1/user/book-appointment`,
+            {
+                docId,
+                slotDate,
+                slotTime
+            },
+            {
+                withCredentials: true
+            }
+        );
+
+        if (data.success) {
+            toast.success(data.message);
+            navigate("/my-appointments");
+        } else {
+            toast.error(data.message);
+        }
+
+    } catch (error) {
+        let errorMessage = "Something went wrong";
+
+        if (typeof error.response?.data === "string") {
+            const match = error.response.data.match(/<pre>Error: (.*?)<br/);
+            if (match) {
+                errorMessage = match[1];
+            }
+        } else if (error.response?.data?.message) {
+            errorMessage = error.response.data.message;
+        } else if (error.message) {
+            errorMessage = error.message;
+        }
+
+        toast.error(errorMessage);
+    }
+};
+
 
     useEffect(() => {
     fetchDocInfo()
@@ -76,10 +184,6 @@ function Appointment() {
     useEffect(() => {
     getAvailableSlots()
     }, [docInfo])
-
-    useEffect(()=>{
-
-    },[])
 
     return docInfo && (
     <div>
@@ -137,13 +241,13 @@ function Appointment() {
                 <div className='flex items-center gap-3 w-full overflow-x-scroll mt-4'>
                     {
                         docSlots.length && docSlots[slotIndex].map((item, index) => (
-                            <p onClick={()=>setSlotTime(item.time)} className={`text-sm font-light flex-shrink-0 px-5 py-2 rounded-full cursor-pointer ${item.time === slotTime ? 'bg-primary text-white' : 'text-gray-400 border border-gray-300'}`}>
+                            <p onClick={()=>setSlotTime(item.time)} key={index} className={`text-sm font-light flex-shrink-0 px-5 py-2 rounded-full cursor-pointer ${item.time === slotTime ? 'bg-primary text-white' : 'text-gray-400 border border-gray-300'}`}>
                             {item.time.toLowerCase()}
                             </p>
                         ))
                     }
                 </div>
-                <button className='bg-primary text-white text-sm font-light px-14 py-3 rounded-full my-6'>Book an Appointment</button>
+                <button onClick={bookAppointment} className='bg-primary text-white text-sm font-light px-14 py-3 rounded-full my-6'>Book an Appointment</button>
             </div>
             {/* Related Doctor */}
             <RelatedDoctors docId={docId} speciality = {docInfo.speciality}/>

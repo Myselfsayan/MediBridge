@@ -87,5 +87,11 @@ doctorSchema.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, 10);
 });
 
-export const Doctor =
-  mongoose.models.Doctor || mongoose.model("Doctor", doctorSchema);
+const doctorModel =
+  mongoose.models.Doctor ||
+  mongoose.model("Doctor", doctorSchema);
+
+export { doctorModel };
+export { doctorModel as Doctor };
+
+export default doctorModel;

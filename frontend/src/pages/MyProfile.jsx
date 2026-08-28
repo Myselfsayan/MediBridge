@@ -10,7 +10,7 @@ function MyProfile() {
     const [imageFile, setImageFile] = useState(null);
     const [previewImage, setPreviewImage] = useState(null);
 
-    console.log(userData);
+
 
     // Wait until user data is loaded
     if (!userData) {
