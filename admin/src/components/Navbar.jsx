@@ -1,24 +1,33 @@
-import { useContext } from 'react';
-import { assets } from '../assets/assets';
-import { AdminContext } from '../context/AdminContext';
-import { useNavigate } from 'react-router-dom';
+import { useContext } from "react";
+import { assets } from "../assets/assets";
+import { AdminContext } from "../context/AdminContext";
+import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
 
-    const { aToken, setAToken } = useContext(AdminContext);
+    const { isAdminLoggedIn, logoutAdmin } = useContext(AdminContext);
+
     const navigate = useNavigate();
 
-    const logout = () => {
-        if (aToken) {
-            navigate('/login');
-            setAToken('');
-            localStorage.removeItem('aToken');
+
+    const logout = async () => {
+
+        if (isAdminLoggedIn) {
+
+            await logoutAdmin();
+
+            navigate("/login");
+
         }
+
     };
+
 
     return (
         <div className="flex justify-between items-center px-4 sm:px-10 py-3 border-b bg-white">
+
             <div className="flex items-center gap-2 text-xs">
+
                 <img
                     className="w-36 sm:w-40 cursor-pointer"
                     src={assets.admin_logo}
@@ -28,14 +37,17 @@ const Navbar = () => {
                 <p className="border px-2.5 py-0.5 rounded-full border-gray-500 text-gray-600">
                     Admin
                 </p>
+
             </div>
 
+
             <button
-                className=" bg-primary text-white text-sm px-10 py-2 rounded-full cursor-pointer"
+                className="bg-primary text-white text-sm px-10 py-2 rounded-full cursor-pointer"
                 onClick={logout}
             >
                 Logout
             </button>
+
         </div>
     );
 };

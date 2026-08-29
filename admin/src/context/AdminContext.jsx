@@ -1,5 +1,4 @@
-import { createContext } from "react";
-import { useState } from "react";
+import { createContext, useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -7,64 +6,238 @@ export const AdminContext = createContext();
 
 const AdminContextProvider = (props) => {
 
-    const [aToken, setAToken] = useState(localStorage.getItem("aToken")?localStorage.getItem("aToken"):'');
     const [doctors, setDoctors] = useState([]);
+    const [appointments, setAppointments] = useState([]);
+
+    // Admin authentication state
+    const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+
+    // Prevent Login page from flashing while checking cookie
+    const [authLoading, setAuthLoading] = useState(true);
+
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
-    const getAllDoctors = async () => {
+
+
+    // ==========================================
+    // CHECK ADMIN AUTHENTICATION
+    // ==========================================
+
+    const checkAdminAuth = async () => {
         try {
+
+            const { data } = await axios.get(
+                `${backendUrl}/api/v1/admin/current-admin`,
+                {
+                    withCredentials: true
+                }
+            );
+
+            if (data.success) {
+                setIsAdminLoggedIn(true);
+            } else {
+                setIsAdminLoggedIn(false);
+            }
+
+        } catch (error) {
+
+            setIsAdminLoggedIn(false);
+
+        } finally {
+
+            setAuthLoading(false);
+
+        }
+    };
+
+
+    // ==========================================
+    // GET ALL DOCTORS
+    // ==========================================
+
+    const getAllDoctors = async () => {
+
+        try {
+
             const { data } = await axios.post(
-            `${backendUrl}/api/v1/admin/all-doctors`,
+                `${backendUrl}/api/v1/admin/all-doctors`,
+                {},
+                {
+                    withCredentials: true
+                }
+            );
+
+            if (data.success) {
+
+                setDoctors(data.data);
+                console.log(data.data);
+
+            } else {
+
+                toast.error(data.message);
+
+            }
+
+        } catch (error) {
+
+            toast.error(
+                error.response?.data?.message ||
+                error.message ||
+                "Something went wrong"
+            );
+
+        }
+    };
+
+
+    // ==========================================
+    // CHANGE DOCTOR AVAILABILITY
+    // ==========================================
+
+    const changeAvailability = async (doctorId) => {
+
+        try {
+
+            const { data } = await axios.post(
+                `${backendUrl}/api/v1/admin/change-availability`,
+                { doctorId },
+                {
+                    withCredentials: true
+                }
+            );
+
+            if (data.success) {
+
+                toast.success(data.message);
+
+                getAllDoctors();
+
+            } else {
+
+                toast.error(data.message);
+
+            }
+
+        } catch (error) {
+
+            toast.error(
+                error.response?.data?.message ||
+                error.message ||
+                "Something went wrong"
+            );
+
+        }
+    };
+
+
+    // ==========================================
+    // GET ALL APPOINTMENTS
+    // ==========================================
+
+    const getAllAppointments = async () => {
+
+        try {
+
+            const { data } = await axios.get(
+                `${backendUrl}/api/v1/admin/appointments`,
+                {
+                    withCredentials: true
+                }
+            );
+
+            if (data.success) {
+
+                setAppointments(data.data);
+                console.log(data.data);
+
+            } else {
+
+                toast.error(data.message);
+
+            }
+
+        } catch (error) {
+
+            toast.error(
+                error.response?.data?.message ||
+                error.message ||
+                "Something went wrong"
+            );
+
+        }
+    };
+
+
+    // ==========================================
+    // CHECK AUTH WHEN ADMIN PANEL LOADS
+    // ==========================================
+
+    const logoutAdmin = async () => {
+
+    try {
+
+        const { data } = await axios.post(
+            `${backendUrl}/api/v1/admin/logout`,
             {},
             {
-                headers: {
-                Authorization: `Bearer ${aToken}`,
-                },
+                withCredentials: true
             }
-            );
+        );
 
-            if (data.success) {
-            setDoctors(data.data);
-            console.log(data.data);
-            } else {
-            toast.error(data.message);
-            }
-        } catch (error) {
-            toast.error(error.response?.data?.message || error.message);
-        }
-        };
+        if (data.success) {
 
-        const changeAvailability = async (doctorId) => {
-        try {
-            const { data } = await axios.post(
-            `${backendUrl}/api/v1/admin/change-availability`,
-            { doctorId },
-            {
-                headers: {
-                Authorization: `Bearer ${aToken}`,
-                },
-                
-            }
-            );
-            if (data.success) {
+            setIsAdminLoggedIn(false);
+
             toast.success(data.message);
-            getAllDoctors();
-            }else{
+
+        } else {
+
             toast.error(data.message);
-            }
+
         }
-        catch (error) {
-            toast.error(error.response?.data?.message || error.message);
-        }
-        }
+
+    } catch (error) {
+
+        toast.error(
+            error.response?.data?.message ||
+            error.message ||
+            "Logout failed"
+        );
+    }
+};
+
+    useEffect(() => {
+
+        checkAdminAuth();
+
+    }, []);
+
+
+    // ==========================================
+    // CONTEXT VALUE
+    // ==========================================
 
     const value = {
-    aToken,
-    setAToken,
-    backendUrl,
-    doctors,
-    getAllDoctors,
-    changeAvailability
+
+        backendUrl,
+
+        // Authentication
+        isAdminLoggedIn,
+        setIsAdminLoggedIn,
+        checkAdminAuth,
+        authLoading,
+        logoutAdmin,
+
+        // Doctors
+        doctors,
+        getAllDoctors,
+        changeAvailability,
+
+        // Appointments
+        appointments,
+        getAllAppointments,
+        setAppointments
     };
+
 
     return (
         <AdminContext.Provider value={value}>
