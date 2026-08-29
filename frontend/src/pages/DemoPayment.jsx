@@ -105,7 +105,7 @@ function DemoPayment() {
                         onClick={() =>
                             navigate("/my-appointments")
                         }
-                        className="px-6 py-2 bg-primary text-white rounded"
+                        className="px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-cyan-700 transition"
                     >
                         Back to appointments
                     </button>
@@ -123,16 +123,16 @@ function DemoPayment() {
 
     return (
 
-        <div className="min-h-[80vh] flex justify-center items-center px-4">
+        <div className="min-h-[80vh] flex justify-center items-center px-4 py-12 bg-slate-50">
 
-            <div className="w-full max-w-md border rounded-lg shadow-sm p-6 bg-white">
+            <div className="w-full max-w-md border border-slate-200 rounded-xl shadow-sm p-8 bg-white">
 
 
                 {/* ==========================================
                     TITLE
                 ========================================== */}
 
-                <h1 className="text-xl font-semibold text-gray-800 text-center mb-6">
+                <h1 className="text-2xl font-bold text-slate-900 text-center mb-8">
                     Demo Payment
                 </h1>
 
@@ -141,7 +141,7 @@ function DemoPayment() {
                     APPOINTMENT DETAILS
                 ========================================== */}
 
-                <div className="space-y-3 text-sm text-gray-600">
+                <div className="space-y-4 text-sm text-slate-600">
 
 
                     {/* Doctor */}
@@ -152,7 +152,7 @@ function DemoPayment() {
                             Doctor
                         </span>
 
-                        <span className="font-medium text-gray-800 text-right">
+                        <span className="font-semibold text-slate-900 text-right">
                             {doctorName || "N/A"}
                         </span>
 
@@ -167,7 +167,7 @@ function DemoPayment() {
                             Speciality
                         </span>
 
-                        <span className="font-medium text-gray-800 text-right">
+                        <span className="font-medium text-slate-800 text-right">
                             {speciality || "N/A"}
                         </span>
 
@@ -182,7 +182,7 @@ function DemoPayment() {
                             Date
                         </span>
 
-                        <span className="font-medium text-gray-800 text-right">
+                        <span className="font-medium text-slate-800 text-right">
                             {appointmentDate || "N/A"}
                         </span>
 
@@ -197,7 +197,7 @@ function DemoPayment() {
                             Time
                         </span>
 
-                        <span className="font-medium text-gray-800 text-right">
+                        <span className="font-medium text-slate-800 text-right">
                             {appointmentTime || "N/A"}
                         </span>
 
@@ -206,13 +206,13 @@ function DemoPayment() {
 
                     {/* Amount */}
 
-                    <div className="border-t pt-3 mt-3 flex justify-between">
+                    <div className="border-t border-slate-200 pt-4 mt-4 flex justify-between">
 
-                        <span className="font-medium text-gray-800">
+                        <span className="font-semibold text-slate-900 text-base">
                             Amount
                         </span>
 
-                        <span className="font-semibold text-gray-800">
+                        <span className="font-bold text-primary text-xl">
                             ₹{fees || 500}
                         </span>
 
@@ -225,9 +225,9 @@ function DemoPayment() {
                     DEMO NOTICE
                 ========================================== */}
 
-                <div className="mt-6 p-3 rounded bg-yellow-50 border border-yellow-200">
+                <div className="mt-8 p-4 rounded-lg bg-amber-50 border border-amber-200">
 
-                    <p className="text-xs text-yellow-700 text-center">
+                    <p className="text-sm font-medium text-amber-700 text-center">
                         This is a demo payment gateway.
                         No real money will be charged.
                     </p>
@@ -243,7 +243,7 @@ function DemoPayment() {
                     type="button"
                     disabled={loading}
                     onClick={handlePayment}
-                    className="w-full mt-6 py-3 bg-primary text-white rounded-md font-medium hover:opacity-90 transition disabled:opacity-50"
+                    className="w-full mt-8 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-cyan-700 hover:shadow-md transition-all duration-300 disabled:opacity-50"
                 >
 
                     {loading
@@ -264,7 +264,7 @@ function DemoPayment() {
                     onClick={() =>
                         navigate("/my-appointments")
                     }
-                    className="w-full mt-3 py-2 border rounded-md text-gray-600 hover:bg-gray-50 transition"
+                    className="w-full mt-4 py-3 border border-slate-300 rounded-lg text-slate-700 font-medium hover:bg-slate-50 transition-all duration-300"
                 >
                     Cancel
                 </button>

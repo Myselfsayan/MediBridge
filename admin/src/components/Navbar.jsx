@@ -24,17 +24,17 @@ const Navbar = () => {
 
 
     return (
-        <div className="flex justify-between items-center px-4 sm:px-10 py-3 border-b bg-white">
+        <div className="flex justify-between items-center px-4 sm:px-10 py-3 bg-white border-b border-slate-200 shadow-sm">
 
             <div className="flex items-center gap-2 text-xs">
 
                 <img
                     className="w-36 sm:w-40 cursor-pointer"
                     src={assets.admin_logo}
-                    alt=""
+                    alt="MediBridge"
                 />
 
-                <p className="border px-2.5 py-0.5 rounded-full border-gray-500 text-gray-600">
+                <p className="bg-cyan-50 text-primary border border-primary/20 rounded-lg px-3 py-1 text-xs font-medium">
                     Admin
                 </p>
 
@@ -42,7 +42,7 @@ const Navbar = () => {
 
 
             <button
-                className="bg-primary text-white text-sm px-10 py-2 rounded-full cursor-pointer"
+                className="bg-primary hover:bg-cyan-700 text-white text-sm px-6 py-2.5 rounded-lg cursor-pointer transition font-medium"
                 onClick={logout}
             >
                 Logout

@@ -116,22 +116,22 @@ function AddDoctor() {
             onSubmit={onSubmitHandler}
         >
 
-            <p className="mb-3 text-lg font-medium">
+            <p className="mb-3 text-lg font-medium text-slate-900">
                 Add Doctor
             </p>
 
 
-            <div className="bg-white px-8 py-8 border rounded w-full max-w-4xl max-h-[80vh] overflow-y-scroll">
+            <div className="bg-white px-8 py-8 border border-slate-200 rounded-xl shadow-sm w-full max-w-4xl max-h-[80vh] overflow-y-scroll">
 
 
                 {/* Doctor Image */}
 
-                <div className="flex items-center gap-4 mb-8 text-gray-500">
+                <div className="flex items-center gap-4 mb-8 text-slate-500">
 
                     <label htmlFor="doc-img">
 
                         <img
-                            className="w-16 bg-gray-100 rounded-full cursor-pointer"
+                            className="w-16 h-16 bg-slate-50 border border-slate-200 rounded-full cursor-pointer object-cover shadow-sm"
                             src={
                                 docImg
                                     ? URL.createObjectURL(docImg)
@@ -163,7 +163,7 @@ function AddDoctor() {
                 </div>
 
 
-                <div className="flex flex-col lg:flex-row items-start gap-10 text-gray-600">
+                <div className="flex flex-col lg:flex-row items-start gap-10 text-slate-600">
 
 
                     {/* LEFT SIDE */}
@@ -175,10 +175,10 @@ function AddDoctor() {
 
                         <div className="flex-1 flex flex-col gap-1">
 
-                            <p>Doctor Name</p>
+                            <p className="text-sm font-medium text-slate-700">Doctor Name</p>
 
                             <input
-                                className="border rounded px-3 py-2"
+                                className="border border-slate-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
                                 type="text"
                                 placeholder="Name"
                                 value={name}
@@ -195,10 +195,10 @@ function AddDoctor() {
 
                         <div className="flex-1 flex flex-col gap-1">
 
-                            <p>Doctor Email</p>
+                            <p className="text-sm font-medium text-slate-700">Doctor Email</p>
 
                             <input
-                                className="border rounded px-3 py-2"
+                                className="border border-slate-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
                                 type="email"
                                 placeholder="Email"
                                 value={email}
@@ -215,10 +215,10 @@ function AddDoctor() {
 
                         <div className="flex-1 flex flex-col gap-1">
 
-                            <p>Doctor Password</p>
+                            <p className="text-sm font-medium text-slate-700">Doctor Password</p>
 
                             <input
-                                className="border rounded px-3 py-2"
+                                className="border border-slate-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
                                 type="password"
                                 placeholder="Password"
                                 value={password}
@@ -235,10 +235,10 @@ function AddDoctor() {
 
                         <div className="flex-1 flex flex-col gap-1">
 
-                            <p>Experience</p>
+                            <p className="text-sm font-medium text-slate-700">Experience</p>
 
                             <select
-                                className="border rounded px-3 py-2"
+                                className="border border-slate-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition bg-white"
                                 value={experience}
                                 onChange={(e) =>
                                     setExperience(e.target.value)
@@ -299,10 +299,10 @@ function AddDoctor() {
 
                         <div className="flex-1 flex flex-col gap-1">
 
-                            <p>Fees</p>
+                            <p className="text-sm font-medium text-slate-700">Fees</p>
 
                             <input
-                                className="border rounded px-3 py-2"
+                                className="border border-slate-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
                                 type="number"
                                 placeholder="Fees"
                                 value={fees}
@@ -326,10 +326,10 @@ function AddDoctor() {
 
                         <div className="flex-1 flex flex-col gap-1">
 
-                            <p>Speciality</p>
+                            <p className="text-sm font-medium text-slate-700">Speciality</p>
 
                             <select
-                                className="border rounded px-3 py-2"
+                                className="border border-slate-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition bg-white"
                                 value={speciality}
                                 onChange={(e) =>
                                     setSpeciality(e.target.value)
@@ -374,10 +374,10 @@ function AddDoctor() {
 
                         <div className="flex-1 flex flex-col gap-1">
 
-                            <p>Education</p>
+                            <p className="text-sm font-medium text-slate-700">Education</p>
 
                             <input
-                                className="border rounded px-3 py-2"
+                                className="border border-slate-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
                                 type="text"
                                 placeholder="Education"
                                 value={degree}
@@ -394,10 +394,10 @@ function AddDoctor() {
 
                         <div className="flex-1 flex flex-col gap-1">
 
-                            <p>Address</p>
+                            <p className="text-sm font-medium text-slate-700">Address</p>
 
                             <input
-                                className="border rounded px-3 py-2"
+                                className="border border-slate-300 rounded-lg px-4 py-2.5 mb-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
                                 type="text"
                                 placeholder="Address 1"
                                 value={address1}
@@ -408,7 +408,7 @@ function AddDoctor() {
                             />
 
                             <input
-                                className="border rounded px-3 py-2"
+                                className="border border-slate-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
                                 type="text"
                                 placeholder="Address 2"
                                 value={address2}
@@ -427,14 +427,14 @@ function AddDoctor() {
 
                 {/* ABOUT */}
 
-                <div>
+                <div className="mt-4">
 
-                    <p className="mt-2 mb-2">
+                    <p className="mt-2 mb-2 text-sm font-medium text-slate-700">
                         About Doctor
                     </p>
 
                     <textarea
-                        className="w-full px-4 pt-2 border rounded"
+                        className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
                         placeholder="Write about the doctor"
                         rows={5}
                         value={about}
@@ -450,7 +450,7 @@ function AddDoctor() {
                 {/* SUBMIT */}
 
                 <button
-                    className="bg-primary px-10 py-3 mt-4 text-white rounded-full"
+                    className="bg-primary hover:opacity-90 transition px-10 py-3 mt-6 text-white font-medium rounded-lg"
                     type="submit"
                 >
                     Add Doctor

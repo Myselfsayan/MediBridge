@@ -67,13 +67,17 @@ function Login() {
     };
 
     return (
-        <form
-            onSubmit={onSubmitHandler}
-            className="min-h-[80vh] flex items-center"
-        >
-            <div className="flex flex-col gap-3 m-auto items-start p-8 min-w-[340px] sm:min-w-96 border rounded-xl text-zinc-600 text-sm shadow-lg">
+        <div className="min-h-[80vh] flex items-center justify-center bg-gradient-to-br from-cyan-50/50 to-white">
+            <form
+                onSubmit={onSubmitHandler}
+                className="flex flex-col gap-4 m-auto items-start p-10 min-w-[340px] sm:min-w-96 bg-white border border-slate-100 rounded-2xl text-slate-600 text-sm shadow-xl"
+            >
+                <div className="w-full text-center mb-2">
+                    <h1 className="text-3xl font-bold text-primary mb-1">MediBridge</h1>
+                    <p className="text-slate-500 text-xs">Healthcare Management System</p>
+                </div>
 
-                <p className="text-2xl font-semibold">
+                <p className="text-2xl font-semibold text-slate-900">
                     {state === "Sign Up"
                         ? "Create Account"
                         : "Login"}
@@ -89,10 +93,10 @@ function Login() {
 
                 {state === "Sign Up" && (
                     <div className="w-full">
-                        <p>Full Name</p>
+                        <p className="mb-1 font-medium">Full Name</p>
 
                         <input
-                            className="border border-zinc-300 rounded w-full p-2 mt-1"
+                            className="border border-slate-300 rounded-lg w-full px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                             type="text"
                             onChange={(e) =>
                                 setName(e.target.value)
@@ -104,10 +108,10 @@ function Login() {
                 )}
 
                 <div className="w-full">
-                    <p>Email</p>
+                    <p className="mb-1 font-medium">Email</p>
 
                     <input
-                        className="border border-zinc-300 rounded w-full p-2 mt-1"
+                        className="border border-slate-300 rounded-lg w-full px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                         type="email"
                         onChange={(e) =>
                             setEmail(e.target.value)
@@ -118,10 +122,10 @@ function Login() {
                 </div>
 
                 <div className="w-full">
-                    <p>Password</p>
+                    <p className="mb-1 font-medium">Password</p>
 
                     <input
-                        className="border border-zinc-300 rounded w-full p-2 mt-1"
+                        className="border border-slate-300 rounded-lg w-full px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                         type="password"
                         onChange={(e) =>
                             setPassword(e.target.value)
@@ -133,7 +137,7 @@ function Login() {
 
                 <button
                     type="submit"
-                    className="bg-primary text-white w-full py-2 rounded-md text-base"
+                    className="bg-primary hover:bg-cyan-700 text-white w-full py-3 rounded-lg text-base font-medium transition shadow-md mt-2"
                 >
                     {state === "Sign Up"
                         ? "Create Account"
@@ -141,32 +145,32 @@ function Login() {
                 </button>
 
                 {state === "Sign Up" ? (
-                    <p>
+                    <p className="mt-2 w-full text-center">
                         Already have an account?{" "}
                         <span
                             onClick={() =>
                                 setState("Login")
                             }
-                            className="text-primary underline cursor-pointer"
+                            className="text-primary font-medium hover:text-cyan-700 underline cursor-pointer"
                         >
                             Login here
                         </span>
                     </p>
                 ) : (
-                    <p>
+                    <p className="mt-2 w-full text-center">
                         Create a new account?{" "}
                         <span
                             onClick={() =>
                                 setState("Sign Up")
                             }
-                            className="text-primary underline cursor-pointer"
+                            className="text-primary font-medium hover:text-cyan-700 underline cursor-pointer"
                         >
                             Click here
                         </span>
                     </p>
                 )}
-            </div>
-        </form>
+            </form>
+        </div>
     );
 }
 

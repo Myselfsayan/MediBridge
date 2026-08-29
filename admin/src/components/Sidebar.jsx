@@ -8,18 +8,18 @@ function Sidebar() {
     const { isAdminLoggedIn } = useContext(AdminContext);
 
     return (
-        <div className="min-h-screen bg-white border-r">
+        <div className="min-h-screen bg-white border-r border-slate-200">
 
             {isAdminLoggedIn && (
 
-                <ul className="text-[#515151] mt-5">
+                <ul className="text-slate-600 mt-5">
 
                     <NavLink
                         to="/admin-dashboard"
                         className={({ isActive }) =>
-                            `flex items-center gap-3 py-3.5 px-3 md:px-9 md:min-w-72 cursor-pointer ${
+                            `flex items-center gap-3 py-3.5 px-3 md:px-9 md:min-w-72 cursor-pointer transition hover:bg-slate-50 ${
                                 isActive
-                                    ? "bg-[#F2F3FF] border-r-4 border-primary"
+                                    ? "bg-cyan-50 border-r-4 border-primary text-primary"
                                     : ""
                             }`
                         }
@@ -37,9 +37,9 @@ function Sidebar() {
                     <NavLink
                         to="/all-appointments"
                         className={({ isActive }) =>
-                            `flex items-center gap-3 py-3.5 px-3 md:px-9 md:min-w-72 cursor-pointer ${
+                            `flex items-center gap-3 py-3.5 px-3 md:px-9 md:min-w-72 cursor-pointer transition hover:bg-slate-50 ${
                                 isActive
-                                    ? "bg-[#F2F3FF] border-r-4 border-primary"
+                                    ? "bg-cyan-50 border-r-4 border-primary text-primary"
                                     : ""
                             }`
                         }
@@ -57,9 +57,9 @@ function Sidebar() {
                     <NavLink
                         to="/add-doctor"
                         className={({ isActive }) =>
-                            `flex items-center gap-3 py-3.5 px-3 md:px-9 md:min-w-72 cursor-pointer ${
+                            `flex items-center gap-3 py-3.5 px-3 md:px-9 md:min-w-72 cursor-pointer transition hover:bg-slate-50 ${
                                 isActive
-                                    ? "bg-[#F2F3FF] border-r-4 border-primary"
+                                    ? "bg-cyan-50 border-r-4 border-primary text-primary"
                                     : ""
                             }`
                         }
@@ -77,9 +77,9 @@ function Sidebar() {
                     <NavLink
                         to="/doctor-list"
                         className={({ isActive }) =>
-                            `flex items-center gap-3 py-3.5 px-3 md:px-9 md:min-w-72 cursor-pointer ${
+                            `flex items-center gap-3 py-3.5 px-3 md:px-9 md:min-w-72 cursor-pointer transition hover:bg-slate-50 ${
                                 isActive
-                                    ? "bg-[#F2F3FF] border-r-4 border-primary"
+                                    ? "bg-cyan-50 border-r-4 border-primary text-primary"
                                     : ""
                             }`
                         }

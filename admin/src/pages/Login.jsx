@@ -68,12 +68,12 @@ const Login = () => {
     return (
         <form
             onSubmit={onSubmitHandler}
-            className="min-h-[80vh] flex items-center"
+            className="min-h-[80vh] flex items-center bg-slate-50"
         >
 
-            <div className="flex flex-col gap-3 m-auto items-start p-8 min-w-[340px] sm:min-w-96 border rounded-xl text-zinc-600 text-sm shadow-lg">
+            <div className="flex flex-col gap-3 m-auto items-start p-8 min-w-[340px] sm:min-w-96 bg-white rounded-2xl shadow-xl border border-slate-100 text-slate-600 text-sm">
 
-                <p className="text-2xl font-semibold m-auto">
+                <p className="text-2xl font-semibold m-auto text-slate-900">
                     <span className="text-primary">
                         {state}
                     </span>{" "}
@@ -81,12 +81,12 @@ const Login = () => {
                 </p>
 
 
-                <div className="w-full">
+                <div className="w-full mt-4">
 
-                    <p>Email</p>
+                    <p className="mb-1 font-medium text-slate-700">Email</p>
 
                     <input
-                        className="border border-[#DADADA] rounded w-full p-2 mt-1"
+                        className="border border-slate-300 rounded-lg w-full px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
                         type="email"
                         onChange={(e) => setEmail(e.target.value)}
                         value={email}
@@ -96,12 +96,12 @@ const Login = () => {
                 </div>
 
 
-                <div className="w-full">
+                <div className="w-full mt-2">
 
-                    <p>Password</p>
+                    <p className="mb-1 font-medium text-slate-700">Password</p>
 
                     <input
-                        className="border border-[#DADADA] rounded w-full p-2 mt-1"
+                        className="border border-slate-300 rounded-lg w-full px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
                         type="password"
                         onChange={(e) => setPassword(e.target.value)}
                         value={password}
@@ -113,7 +113,7 @@ const Login = () => {
 
                 <button
                     type="submit"
-                    className="bg-primary text-white w-full py-2 rounded-md text-base"
+                    className="bg-primary hover:bg-cyan-700 text-white w-full py-2.5 mt-4 rounded-lg text-base font-medium transition"
                 >
                     Login
                 </button>
@@ -121,12 +121,12 @@ const Login = () => {
 
                 {state === "Admin" ? (
 
-                    <p>
+                    <p className="mt-2 w-full text-center">
                         Doctor Login?{" "}
 
                         <span
                             onClick={() => setState("Doctor")}
-                            className="text-primary underline cursor-pointer"
+                            className="text-primary hover:text-cyan-700 underline cursor-pointer"
                         >
                             Click here
                         </span>
@@ -134,12 +134,12 @@ const Login = () => {
 
                 ) : (
 
-                    <p>
+                    <p className="mt-2 w-full text-center">
                         Admin Login?{" "}
 
                         <span
                             onClick={() => setState("Admin")}
-                            className="text-primary underline cursor-pointer"
+                            className="text-primary hover:text-cyan-700 underline cursor-pointer"
                         >
                             Click here
                         </span>

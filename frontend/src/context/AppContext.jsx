@@ -223,6 +223,7 @@ const AppContextProvider = (props) => {
             if (data.success) {
 
                 setDoctors(data.data);
+                return data.data;
 
             } else {
 
@@ -239,6 +240,8 @@ const AppContextProvider = (props) => {
                 "Something went wrong"
             );
         }
+
+        return null;
     };
 
 
@@ -248,34 +251,31 @@ const AppContextProvider = (props) => {
 
     const value = {
 
-        // Doctors
-        doctors,
+            // Doctors
+            doctors,
+            getDoctorsData,
 
+            // Common
+            currencySymbol,
+            backendUrl,
 
-        // Common
-        currencySymbol,
-        backendUrl,
+            // Authentication
+            isLoggedIn,
+            setIsLoggedIn,
 
+            userData,
+            setUserData,
 
-        // Authentication
-        isLoggedIn,
-        setIsLoggedIn,
+            // Payment
+            paidAppointments,
+            setPaidAppointments,
 
-        userData,
-        setUserData,
+            markAppointmentAsPaid,
+            cancelAndRefund,
 
-
-        // Payment
-        paidAppointments,
-        setPaidAppointments,
-
-        markAppointmentAsPaid,
-        cancelAndRefund,
-
-
-        // Functions
-        checkAuth
-    };
+            // Functions
+            checkAuth
+        };
 
 
     // ==========================================

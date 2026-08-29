@@ -7,7 +7,8 @@ const AllAppointments = () => {
     const {
         appointments,
         getAllAppointments,
-        isAdminLoggedIn
+        isAdminLoggedIn,
+        cancelAppointment
     } = useContext(AdminContext);
 
     const { calculateAge } = useContext(AppContext);
@@ -31,18 +32,18 @@ const AllAppointments = () => {
 
             {/* Title */}
 
-            <p className="mb-3 text-lg font-medium">
+            <p className="mb-3 text-lg font-medium text-slate-900">
                 All Appointments
             </p>
 
 
             {/* Appointment Table */}
 
-            <div className="bg-white border rounded text-sm max-h-[80vh] overflow-y-scroll">
+            <div className="bg-white border border-slate-200 rounded-xl shadow-sm text-sm max-h-[80vh] overflow-y-scroll">
 
                 {/* Table Header */}
 
-                <div className="hidden sm:grid grid-cols-[0.5fr_3fr_1fr_3fr_1.5fr_1.5fr_1fr] gap-4 py-3 px-6 border-b text-gray-600">
+                <div className="hidden sm:grid grid-cols-[0.5fr_3fr_1fr_3fr_1.5fr_1.5fr_1fr] gap-4 py-3 px-6 border-b bg-slate-50 text-slate-600 font-medium">
 
                     <p>#</p>
 
@@ -76,7 +77,7 @@ const AllAppointments = () => {
 
                             <div
                                 key={item._id || index}
-                                className="flex flex-wrap justify-between max-sm:gap-2 sm:grid sm:grid-cols-[0.5fr_3fr_1fr_3fr_1.5fr_1.5fr_1fr] gap-4 items-center py-3 px-6 border-b text-gray-500 hover:bg-gray-50"
+                                className="flex flex-wrap justify-between max-sm:gap-2 sm:grid sm:grid-cols-[0.5fr_3fr_1fr_3fr_1.5fr_1.5fr_1fr] gap-4 items-center py-4 px-6 border-b text-slate-600 hover:bg-slate-50 transition"
                             >
 
                                 {/* Number */}
@@ -88,15 +89,15 @@ const AllAppointments = () => {
 
                                 {/* Patient */}
 
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-3">
 
                                     <img
-                                        className="w-8 h-8 rounded-full object-cover"
+                                        className="w-8 h-8 rounded-full object-cover shadow-sm"
                                         src={item.userData?.image}
                                         alt=""
                                     />
 
-                                    <p>
+                                    <p className="font-medium text-slate-700">
                                         {item.userData?.name || "N/A"}
                                     </p>
 
@@ -122,22 +123,22 @@ const AllAppointments = () => {
 
                                     <br />
 
-                                    {item.slotTime || ""}
+                                    <span className="text-slate-500 text-xs">{item.slotTime || ""}</span>
 
                                 </p>
 
 
                                 {/* Doctor */}
 
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-3">
 
                                     <img
-                                        className="w-8 h-8 rounded-full object-cover bg-gray-100"
+                                        className="w-8 h-8 rounded-full object-cover bg-slate-100 shadow-sm"
                                         src={item.docData?.image}
                                         alt=""
                                     />
 
-                                    <p>
+                                    <p className="font-medium text-slate-700">
                                         {item.docData?.name || "N/A"}
                                     </p>
 
@@ -146,7 +147,7 @@ const AllAppointments = () => {
 
                                 {/* Fees */}
 
-                                <p>
+                                <p className="font-medium">
                                     ₹{item.amount || 0}
                                 </p>
 
@@ -155,25 +156,28 @@ const AllAppointments = () => {
 
                                 <div>
 
-                                    {item.cancelled ? (
+                                  {item.cancelled ? (
 
-                                        <p className="text-red-500 text-xs">
-                                            Cancelled
-                                        </p>
+                                      <span className="bg-red-50 text-red-600 rounded-full px-3 py-1 text-xs font-medium border border-red-100">
+                                          Cancelled
+                                      </span>
 
-                                    ) : item.isCompleted ? (
+                                  ) : item.isCompleted ? (
 
-                                        <p className="text-green-500 text-xs">
-                                            Completed
-                                        </p>
+                                      <span className="bg-emerald-50 text-emerald-600 rounded-full px-3 py-1 text-xs font-medium border border-emerald-100">
+                                          Completed
+                                      </span>
 
-                                    ) : (
+                                  ) : (
 
-                                        <p className="text-primary text-xs">
-                                            Booked
-                                        </p>
+                                      <button
+                                          onClick={() => cancelAppointment(item._id)}
+                                          className="text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg px-3 py-1 text-xs font-medium transition cursor-pointer border border-transparent hover:border-red-100"
+                                      >
+                                          Cancel
+                                      </button>
 
-                                    )}
+                                  )}
 
                                 </div>
 
@@ -185,7 +189,7 @@ const AllAppointments = () => {
 
                 ) : (
 
-                    <div className="py-10 text-center text-gray-500">
+                    <div className="py-10 text-center text-slate-500">
                         No appointments found
                     </div>
 

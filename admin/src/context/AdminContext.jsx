@@ -204,6 +204,47 @@ const AdminContextProvider = (props) => {
         );
     }
 };
+// ==========================================
+// CANCEL APPOINTMENT
+// ==========================================
+
+const cancelAppointment = async (appointmentId) => {
+
+    try {
+
+        const { data } = await axios.post(
+            `${backendUrl}/api/v1/admin/cancel-appointment`,
+            {
+                appointmentId
+            },
+            {
+                withCredentials: true
+            }
+        );
+
+        if (data.success) {
+
+            toast.success(data.message);
+
+            // Refresh appointments
+            getAllAppointments();
+
+        } else {
+
+            toast.error(data.message);
+
+        }
+
+    } catch (error) {
+
+        toast.error(
+            error.response?.data?.message ||
+            error.message ||
+            "Failed to cancel appointment"
+        );
+
+    }
+};
 
     useEffect(() => {
 
@@ -235,7 +276,10 @@ const AdminContextProvider = (props) => {
         // Appointments
         appointments,
         getAllAppointments,
-        setAppointments
+        setAppointments,
+
+        //admin can cancel appointment
+        cancelAppointment
     };
 
 

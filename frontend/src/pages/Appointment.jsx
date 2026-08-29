@@ -9,7 +9,13 @@ import { useNavigate } from 'react-router-dom'
 
 function Appointment() {
     const { docId } = useParams()
-    const { doctors , currencySymbol , backendUrl  , isLoggedIn  } = useContext(AppContext)
+    const {
+    doctors,
+    getDoctorsData,
+    currencySymbol,
+    backendUrl,
+    isLoggedIn
+} = useContext(AppContext);
 
     const [docInfo, setDocInfo] = useState(null)
     const [docSlots, setDocSlots] = useState([])
@@ -152,9 +158,24 @@ const bookAppointment = async () => {
         );
 
         if (data.success) {
-            toast.success(data.message);
-            navigate("/my-appointments");
-        } else {
+
+    toast.success(data.message);
+
+    // Remove the booked slot immediately from frontend
+    setDocSlots((prevSlots) => {
+        const updatedSlots = [...prevSlots];
+
+        updatedSlots[slotIndex] = updatedSlots[slotIndex].filter(
+            (slot) => slot.time !== slotTime
+        );
+
+        return updatedSlots;
+    });
+
+    // Clear selected time
+    setSlotTime("");
+
+} else {
             toast.error(data.message);
         }
 
@@ -177,13 +198,50 @@ const bookAppointment = async () => {
 };
 
 
-    useEffect(() => {
-    fetchDocInfo()
-    }, [doctors, docId])
+    // ==========================================
+// GET FRESH DOCTOR DATA
+// ==========================================
 
-    useEffect(() => {
-    getAvailableSlots()
-    }, [docInfo])
+useEffect(() => {
+
+    const loadFreshData = async () => {
+        const freshDoctors = await getDoctorsData();
+        if (freshDoctors) {
+            const doc = freshDoctors.find((d) => d._id === docId);
+            setDocInfo(doc || null);
+        }
+    };
+
+    loadFreshData();
+
+}, [docId]);
+
+
+// ==========================================
+// SET CURRENT DOCTOR (fallback from context)
+// ==========================================
+
+useEffect(() => {
+
+    if (doctors.length > 0 && !docInfo) {
+        const doc = doctors.find((d) => d._id === docId);
+        if (doc) setDocInfo(doc);
+    }
+
+}, [doctors, docId]);
+
+
+// ==========================================
+// GENERATE AVAILABLE SLOTS
+// ==========================================
+
+useEffect(() => {
+
+    if (docInfo) {
+        getAvailableSlots();
+    }
+
+}, [docInfo]);
 
     return docInfo && (
     <div>
@@ -240,7 +298,7 @@ const bookAppointment = async () => {
                 </div>
                 <div className='flex items-center gap-3 w-full overflow-x-scroll mt-4'>
                     {
-                        docSlots.length && docSlots[slotIndex].map((item, index) => (
+                        docSlots.length && docSlots[slotIndex] && docSlots[slotIndex].map((item, index) => (
                             <p onClick={()=>setSlotTime(item.time)} key={index} className={`text-sm font-light flex-shrink-0 px-5 py-2 rounded-full cursor-pointer ${item.time === slotTime ? 'bg-primary text-white' : 'text-gray-400 border border-gray-300'}`}>
                             {item.time.toLowerCase()}
                             </p>

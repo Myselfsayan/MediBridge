@@ -4,11 +4,12 @@ import {
     allDoctors,
     appointmentsAdmin,
     currentAdmin,
-    logoutAdmin
+    logoutAdmin,
+    cancelAppointmentAdmin
 } from "../controllers/admin.controller.js";
 
 import { changeAvailability } from "../controllers/doctor.controller.js";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { verifyAdminJWT } from "../middlewares/auth.middleware.js";
 import express from "express";
 import { upload } from "../middlewares/multer.middleware.js";
 
@@ -31,7 +32,7 @@ adminRouter.post(
 
 adminRouter.get(
     "/current-admin",
-    verifyJWT,
+    verifyAdminJWT,
     currentAdmin
 );
 
@@ -42,7 +43,7 @@ adminRouter.get(
 
 adminRouter.post(
     "/add-doctor",
-    verifyJWT,
+    verifyAdminJWT,
     upload.single("image"),
     addDoctor
 );
@@ -54,7 +55,7 @@ adminRouter.post(
 
 adminRouter.post(
     "/all-doctors",
-    verifyJWT,
+    verifyAdminJWT,
     allDoctors
 );
 
@@ -65,7 +66,7 @@ adminRouter.post(
 
 adminRouter.post(
     "/change-availability",
-    verifyJWT,
+    verifyAdminJWT,
     changeAvailability
 );
 
@@ -76,14 +77,20 @@ adminRouter.post(
 
 adminRouter.get(
     "/appointments",
-    verifyJWT,
+    verifyAdminJWT,
     appointmentsAdmin
 );
 
 adminRouter.post(
     "/logout",
-    verifyJWT,
+    verifyAdminJWT,
     logoutAdmin
+);
+
+adminRouter.post(
+    "/cancel-appointment",
+    verifyAdminJWT,
+    cancelAppointmentAdmin
 );
 
 

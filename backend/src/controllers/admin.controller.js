@@ -206,13 +206,13 @@ const loginAdmin = asyncHandler(async (req, res) => {
         .status(200)
 
         .cookie(
-            "accessToken",
+            "adminAccessToken",
             accessToken,
             accessCookieOptions
         )
 
         .cookie(
-            "refreshToken",
+            "adminRefreshToken",
             refreshToken,
             refreshCookieOptions
         )
@@ -301,12 +301,12 @@ const logoutAdmin = asyncHandler(async (req, res) => {
         .status(200)
 
         .clearCookie(
-            "accessToken",
+            "adminAccessToken",
             accessCookieOptions
         )
 
         .clearCookie(
-            "refreshToken",
+            "adminRefreshToken",
             refreshCookieOptions
         )
 
@@ -319,6 +319,94 @@ const logoutAdmin = asyncHandler(async (req, res) => {
         );
 });
 
+// ==========================================
+// CANCEL APPOINTMENT BY ADMIN
+// ==========================================
+
+const cancelAppointmentAdmin = asyncHandler(async (req, res) => {
+
+    const { appointmentId } = req.body;
+
+    // Validate appointment ID
+    if (!appointmentId) {
+        throw new ApiError(
+            400,
+            "Appointment ID is required"
+        );
+    }
+
+    // Find appointment
+    const appointment = await appointmentModel.findById(
+        appointmentId
+    );
+
+    if (!appointment) {
+        throw new ApiError(
+            404,
+            "Appointment not found"
+        );
+    }
+
+    // Already cancelled
+    if (appointment.cancelled) {
+        throw new ApiError(
+            400,
+            "Appointment is already cancelled"
+        );
+    }
+
+    // Find doctor
+    const doctor = await Doctor.findById(
+        appointment.docId
+    );
+
+    if (!doctor) {
+        throw new ApiError(
+            404,
+            "Doctor not found"
+        );
+    }
+
+    // ==========================================
+    // REMOVE SLOT FROM DOCTOR'S BOOKED SLOTS
+    // ==========================================
+
+    if (doctor.slots_booked) {
+        const bookedSlots = doctor.slots_booked.get(appointment.slotDate);
+        if (bookedSlots) {
+            const updatedSlots = bookedSlots.filter(
+                (time) => time !== appointment.slotTime
+            );
+
+            if (updatedSlots.length === 0) {
+                doctor.slots_booked.delete(appointment.slotDate);
+            } else {
+                doctor.slots_booked.set(appointment.slotDate, updatedSlots);
+            }
+
+            doctor.markModified("slots_booked");
+
+            await doctor.save();
+        }
+    }
+
+    // ==========================================
+    // CANCEL APPOINTMENT
+    // ==========================================
+
+    appointment.cancelled = true;
+
+    await appointment.save();
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            appointment,
+            "Appointment cancelled successfully"
+        )
+    );
+});
+
 
 export {
     addDoctor,
@@ -326,5 +414,6 @@ export {
     currentAdmin,
     allDoctors,
     appointmentsAdmin,
-    logoutAdmin
+    logoutAdmin,
+    cancelAppointmentAdmin
 };

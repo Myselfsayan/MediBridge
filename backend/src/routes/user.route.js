@@ -10,20 +10,20 @@ import { registerUser ,
         listAppointment,
         cancelAppointment} 
 from "../controllers/user.controller.js";
-import { verifyJWT } from "../middlewares/auth.middleware.js"
+import { verifyUserJWT } from "../middlewares/auth.middleware.js"
 import { upload } from "../middlewares/multer.middleware.js";
 
 const userRouter = express.Router();
 
 userRouter.post("/register", registerUser);
 userRouter.post("/login", loginUser);
-userRouter.post("/logout",verifyJWT, logoutUser);
+userRouter.post("/logout",verifyUserJWT, logoutUser);
 userRouter.post("/refresh-token", refreshAccessToken);
-userRouter.get("/current-user",verifyJWT,getCurrentUser);
-userRouter.get("/profile",verifyJWT,getProfile);
-userRouter.put("/profile-update",verifyJWT,upload.single("image"),updateProfile);
-userRouter.post("/book-appointment",verifyJWT,bookAppointment);
-userRouter.get("/appointments",verifyJWT,listAppointment);
-userRouter.post("/cancel-appointment",verifyJWT,cancelAppointment);
+userRouter.get("/current-user",verifyUserJWT,getCurrentUser);
+userRouter.get("/profile",verifyUserJWT,getProfile);
+userRouter.put("/profile-update",verifyUserJWT,upload.single("image"),updateProfile);
+userRouter.post("/book-appointment",verifyUserJWT,bookAppointment);
+userRouter.get("/appointments",verifyUserJWT,listAppointment);
+userRouter.post("/cancel-appointment",verifyUserJWT,cancelAppointment);
 
 export default userRouter;
