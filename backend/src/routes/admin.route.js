@@ -5,7 +5,8 @@ import {
     appointmentsAdmin,
     currentAdmin,
     logoutAdmin,
-    cancelAppointmentAdmin
+    cancelAppointmentAdmin,
+    adminDashboard
 } from "../controllers/admin.controller.js";
 
 import { changeAvailability } from "../controllers/doctor.controller.js";
@@ -91,6 +92,12 @@ adminRouter.post(
     "/cancel-appointment",
     verifyAdminJWT,
     cancelAppointmentAdmin
+);
+
+adminRouter.get(
+    "/dashboard",
+    verifyAdminJWT,
+    adminDashboard
 );
 
 

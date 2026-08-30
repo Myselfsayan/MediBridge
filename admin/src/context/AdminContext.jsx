@@ -15,6 +15,8 @@ const AdminContextProvider = (props) => {
     // Prevent Login page from flashing while checking cookie
     const [authLoading, setAuthLoading] = useState(true);
 
+    const [dashData, setDashData] = useState(false);
+
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
     const months = [
@@ -285,11 +287,32 @@ const cancelAppointment = async (appointmentId) => {
     }
 };
 
+const getDashData = async () => {
+    try {
+        const { data } = await axios.get(
+            backendUrl + "/api/v1/admin/dashboard",
+            {
+                withCredentials: true
+            }
+        );
+
+        if (data.success) {
+            setDashData(data.data);
+            console.log(data.data);
+        } else {
+            toast.error(data.message);
+        }
+    } catch (error) {
+        toast.error(error.response?.data?.message || error.message);
+    }
+};
+
     useEffect(() => {
 
         checkAdminAuth();
 
     }, []);
+
 
 
     // ==========================================
@@ -319,7 +342,9 @@ const cancelAppointment = async (appointmentId) => {
 
         //admin can cancel appointment
         cancelAppointment,
-        slotDateFormat
+        slotDateFormat,
+        getDashData,
+        dashData
     };
 
 

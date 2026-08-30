@@ -5,6 +5,7 @@ import { Doctor } from "../models/doctor.model.js";
 import appointmentModel from "../models/appointment.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
+import { User } from "../models/user.model.js";
 
 
 // ==========================================
@@ -407,6 +408,32 @@ const cancelAppointmentAdmin = asyncHandler(async (req, res) => {
     );
 });
 
+// API to get dashboard data for admin panel
+const adminDashboard = asyncHandler(async (req, res) => {
+
+    const doctors = await Doctor.find({});
+    const users = await User.find({});
+    const appointments = await appointmentModel.find({});
+
+    const dashData = {
+        doctors: doctors.length,
+        appointments: appointments.length,
+        patients: users.length,
+        latestAppointments: appointments
+            .slice()
+            .reverse()
+            .slice(0, 5),
+    };
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            dashData,
+            "Admin dashboard data fetched successfully"
+        )
+    );
+});
+
 
 export {
     addDoctor,
@@ -415,5 +442,6 @@ export {
     allDoctors,
     appointmentsAdmin,
     logoutAdmin,
-    cancelAppointmentAdmin
+    cancelAppointmentAdmin,
+    adminDashboard
 };
