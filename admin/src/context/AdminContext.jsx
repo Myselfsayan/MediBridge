@@ -17,6 +17,45 @@ const AdminContextProvider = (props) => {
 
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
+    const months = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec"
+    ];
+
+
+
+
+    // ==========================================
+    // FORMAT DATE
+    // ==========================================
+
+    const slotDateFormat = (slotDate) => {
+
+        if (!slotDate) {
+            return "";
+        }
+
+        const dateArray = slotDate.split("_");
+
+        return (
+            dateArray[0] +
+            " " +
+            months[Number(dateArray[1]) - 1] +
+            " " +
+            dateArray[2]
+        );
+    };
+
 
     // ==========================================
     // CHECK ADMIN AUTHENTICATION
@@ -279,7 +318,8 @@ const cancelAppointment = async (appointmentId) => {
         setAppointments,
 
         //admin can cancel appointment
-        cancelAppointment
+        cancelAppointment,
+        slotDateFormat
     };
 
 

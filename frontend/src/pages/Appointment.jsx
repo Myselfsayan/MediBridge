@@ -24,10 +24,10 @@ function Appointment() {
     const daysOfWeek = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'] 
     const navigate = useNavigate()   
 
-    const fetchDocInfo = async () => {
-    const docInfo = doctors.find((doc) => doc._id === docId)
-    setDocInfo(docInfo)
-    }
+    // const fetchDocInfo = async () => {
+    // const docInfo = doctors.find((doc) => doc._id === docId)
+    // setDocInfo(docInfo)
+    // }
 
 const getAvailableSlots = async () => {
 
@@ -158,8 +158,8 @@ const bookAppointment = async () => {
         );
 
         if (data.success) {
-
-    toast.success(data.message);
+        navigate("/my-appointments");
+        toast.success(data.message);
 
     // Remove the booked slot immediately from frontend
     setDocSlots((prevSlots) => {

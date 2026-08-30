@@ -2,6 +2,7 @@ import { useState, useContext } from "react";
 import { AdminContext } from "../context/AdminContext.jsx";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
 
@@ -11,6 +12,7 @@ const Login = () => {
     const [password, setPassword] = useState("");
 
     const { backendUrl,  checkAdminAuth } = useContext(AdminContext);
+    const navigate = useNavigate();
 
     const onSubmitHandler = async (e) => {
         e.preventDefault();
@@ -31,7 +33,7 @@ const Login = () => {
                 );
 
                 if (data.success) {
-
+                    navigate("/admin-dashboard");
                     console.log("Admin login successful:", data);
 
                     toast.success(data.message);

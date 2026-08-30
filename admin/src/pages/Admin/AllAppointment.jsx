@@ -8,7 +8,8 @@ const AllAppointments = () => {
         appointments,
         getAllAppointments,
         isAdminLoggedIn,
-        cancelAppointment
+        cancelAppointment,
+        slotDateFormat
     } = useContext(AdminContext);
 
     const { calculateAge } = useContext(AppContext);
@@ -119,7 +120,7 @@ const AllAppointments = () => {
 
                                 <p>
 
-                                    {item.slotDate || "N/A"}
+                                    {slotDateFormat(item.slotDate) || "N/A"}
 
                                     <br />
 
