@@ -50,11 +50,30 @@ const Login = () => {
                 }
 
             } else {
+                    const { data } = await axios.post(
+                        backendUrl + "/api/v1/doctor/login",
+                        {
+                            email,
+                            password
+                        },
+                        {
+                            withCredentials: true
+                        }
+                    );
 
-                // Doctor login here
+                    if (data.success) {
+                        toast.success(data.message);
+                        console.log(data);
 
-            }
+                        // Don't store doctor token in localStorage.
+                        // Backend has already set doctorAccessToken
+                        // as an HTTP-only cookie.
 
+                        navigate("/doctor-dashboard");
+                    } else {
+                        toast.error(data.message);
+                    }
+                }
         } catch (error) {
 
             console.log("Login error:", error.response?.data || error);
