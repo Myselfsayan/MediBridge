@@ -326,70 +326,93 @@ const logoutAdmin = asyncHandler(async (req, res) => {
 
 const cancelAppointmentAdmin = asyncHandler(async (req, res) => {
 
+    console.log("=================================");
+    console.log("🔥 ADMIN CANCEL APPOINTMENT");
+    console.log("=================================");
+
+
+    // ==========================================
+    // GET APPOINTMENT ID
+    // ==========================================
+
     const { appointmentId } = req.body;
 
-    // Validate appointment ID
+    console.log("Appointment ID:", appointmentId);
+
+
+    // ==========================================
+    // CHECK APPOINTMENT ID
+    // ==========================================
+
     if (!appointmentId) {
-        throw new ApiError(
-            400,
-            "Appointment ID is required"
-        );
+
+        return res.status(400).json({
+            success: false,
+            message: "Appointment ID is required",
+        });
+
     }
 
-    // Find appointment
-    const appointment = await appointmentModel.findById(
-        appointmentId
-    );
+
+    // ==========================================
+    // FIND APPOINTMENT
+    // ==========================================
+
+    const appointment =
+        await appointmentModel.findById(appointmentId);
+
 
     if (!appointment) {
-        throw new ApiError(
-            404,
-            "Appointment not found"
-        );
+
+        return res.status(404).json({
+            success: false,
+            message: "Appointment not found",
+        });
+
     }
 
-    // Already cancelled
-    if (appointment.cancelled) {
-        throw new ApiError(
-            400,
-            "Appointment is already cancelled"
-        );
-    }
 
-    // Find doctor
-    const doctor = await Doctor.findById(
-        appointment.docId
+    console.log(
+        "Payment status before cancellation:",
+        appointment.paymentStatus
     );
 
-    if (!doctor) {
-        throw new ApiError(
-            404,
-            "Doctor not found"
-        );
-    }
+    console.log(
+        "Cancelled before:",
+        appointment.cancelled
+    );
+
 
     // ==========================================
-    // REMOVE SLOT FROM DOCTOR'S BOOKED SLOTS
+    // CHECK IF ALREADY CANCELLED
     // ==========================================
 
-    if (doctor.slots_booked) {
-        const bookedSlots = doctor.slots_booked.get(appointment.slotDate);
-        if (bookedSlots) {
-            const updatedSlots = bookedSlots.filter(
-                (time) => time !== appointment.slotTime
-            );
+    if (appointment.cancelled) {
 
-            if (updatedSlots.length === 0) {
-                doctor.slots_booked.delete(appointment.slotDate);
-            } else {
-                doctor.slots_booked.set(appointment.slotDate, updatedSlots);
-            }
+        return res.status(400).json({
+            success: false,
+            message: "Appointment is already cancelled",
+            paymentStatus: appointment.paymentStatus,
+        });
 
-            doctor.markModified("slots_booked");
-
-            await doctor.save();
-        }
     }
+
+
+    // ==========================================
+    // PAYMENT STATUS LOGIC
+    // ==========================================
+
+    if (appointment.paymentStatus === "paid") {
+
+        // paid → refunded
+        appointment.paymentStatus = "refunded";
+
+    }
+
+    // pending → pending
+    // failed → failed
+    // refunded → refunded
+
 
     // ==========================================
     // CANCEL APPOINTMENT
@@ -397,16 +420,125 @@ const cancelAppointmentAdmin = asyncHandler(async (req, res) => {
 
     appointment.cancelled = true;
 
+
+    // ==========================================
+    // FIND DOCTOR
+    // ==========================================
+
+    const doctor =
+        await Doctor.findById(appointment.docId);
+
+
+    if (!doctor) {
+
+        return res.status(404).json({
+            success: false,
+            message: "Doctor not found",
+        });
+
+    }
+
+
+    // ==========================================
+    // GET BOOKED SLOTS
+    // ==========================================
+
+    const bookedSlots =
+        doctor.slots_booked.get(
+            appointment.slotDate
+        ) || [];
+
+
+    console.log(
+        "Booked slots before:",
+        bookedSlots
+    );
+
+
+    // ==========================================
+    // REMOVE CANCELLED SLOT
+    // ==========================================
+
+    const updatedSlots =
+        bookedSlots.filter(
+            (slot) =>
+                slot !== appointment.slotTime
+        );
+
+
+    console.log(
+        "Booked slots after:",
+        updatedSlots
+    );
+
+
+    // ==========================================
+    // UPDATE DOCTOR SLOTS
+    // ==========================================
+
+    doctor.slots_booked.set(
+        appointment.slotDate,
+        updatedSlots
+    );
+
+
+    await doctor.save();
+
+
+    // ==========================================
+    // SAVE APPOINTMENT
+    // ==========================================
+
     await appointment.save();
 
-    return res.status(200).json(
-        new ApiResponse(
-            200,
-            appointment,
-            "Appointment cancelled successfully"
-        )
+
+    // ==========================================
+    // FINAL LOG
+    // ==========================================
+
+    console.log(
+        "Payment status after cancellation:",
+        appointment.paymentStatus
     );
+
+    console.log(
+        "Cancelled after:",
+        appointment.cancelled
+    );
+
+    console.log(
+        "Released slot:",
+        appointment.slotTime
+    );
+
+    console.log("=================================");
+
+
+    // ==========================================
+    // RESPONSE
+    // ==========================================
+
+    return res.status(200).json({
+
+        success: true,
+
+        message:
+            appointment.paymentStatus === "refunded"
+                ? "Appointment cancelled and payment refunded"
+                : "Appointment cancelled successfully",
+
+        paymentStatus:
+            appointment.paymentStatus,
+
+        cancelled:
+            appointment.cancelled,
+
+        appointment,
+
+    });
+
 });
+
 
 // API to get dashboard data for admin panel
 const adminDashboard = asyncHandler(async (req, res) => {

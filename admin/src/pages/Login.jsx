@@ -1,5 +1,6 @@
 import { useState, useContext } from "react";
 import { AdminContext } from "../context/AdminContext.jsx";
+import { DoctorContext } from "../context/DoctorContext.jsx";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
@@ -11,159 +12,450 @@ const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
-    const { backendUrl,  checkAdminAuth } = useContext(AdminContext);
+    const {
+        backendUrl,
+        checkAdminAuth
+    } = useContext(AdminContext);
+
+    const {
+        checkDoctorAuth
+    } = useContext(DoctorContext);
+
     const navigate = useNavigate();
 
+
+    // ==========================================
+    // LOGIN HANDLER
+    // ==========================================
+
     const onSubmitHandler = async (e) => {
+
         e.preventDefault();
 
         try {
+
+            const cleanEmail = email.trim();
+
+            // ==========================================
+            // ADMIN LOGIN
+            // ==========================================
 
             if (state === "Admin") {
 
                 const { data } = await axios.post(
                     `${backendUrl}/api/v1/admin/login`,
                     {
-                        email,
-                        password
+                        email: cleanEmail,
+                        password: password
                     },
                     {
                         withCredentials: true
                     }
                 );
 
+
                 if (data.success) {
-                    navigate("/admin-dashboard");
-                    console.log("Admin login successful:", data);
+
+                    console.log(
+                        "Admin login successful:",
+                        data
+                    );
 
                     toast.success(data.message);
+
+                    // Check admin authentication
                     await checkAdminAuth();
 
-                    // No localStorage
-                    // No aToken
-                    // Token is stored in HTTP-only cookie
-
-                } else {
-
-                    toast.error(data.message);
-
-                }
-
-            } else {
-                    const { data } = await axios.post(
-                        backendUrl + "/api/v1/doctor/login",
+                    // Go to admin dashboard
+                    navigate(
+                        "/admin-dashboard",
                         {
-                            email,
-                            password
-                        },
-                        {
-                            withCredentials: true
+                            replace: true
                         }
                     );
 
-                    if (data.success) {
-                        toast.success(data.message);
-                        console.log(data);
+                } else {
 
-                        // Don't store doctor token in localStorage.
-                        // Backend has already set doctorAccessToken
-                        // as an HTTP-only cookie.
+                    toast.error(
+                        data.message ||
+                        "Admin login failed"
+                    );
 
-                        navigate("/doctor-dashboard");
-                    } else {
-                        toast.error(data.message);
-                    }
                 }
+
+            }
+
+            // ==========================================
+            // DOCTOR LOGIN
+            // ==========================================
+
+            else {
+
+                console.log(
+                    "================================="
+                );
+
+                console.log(
+                    "STARTING DOCTOR LOGIN"
+                );
+
+                console.log(
+                    "Email:",
+                    cleanEmail
+                );
+
+                console.log(
+                    "Backend URL:",
+                    backendUrl
+                );
+
+                console.log(
+                    "================================="
+                );
+
+
+                const { data } = await axios.post(
+                    `${backendUrl}/api/v1/doctor/login`,
+                    {
+                        email: cleanEmail,
+                        password: password
+                    },
+                    {
+                        withCredentials: true
+                    }
+                );
+
+
+                console.log(
+                    "================================="
+                );
+
+                console.log(
+                    "DOCTOR LOGIN RESPONSE:",
+                    data
+                );
+
+                console.log(
+                    "================================="
+                );
+
+
+                // ==========================================
+                // DOCTOR LOGIN SUCCESS
+                // ==========================================
+
+                if (data.success) {
+
+                    console.log(
+                        "Doctor login successful"
+                    );
+
+                    console.log(
+                        "Doctor:",
+                        data.data?.doctor
+                    );
+
+
+                    toast.success(
+                        data.message ||
+                        "Doctor logged in successfully"
+                    );
+
+
+                    // ==========================================
+                    // CHECK DOCTOR AUTHENTICATION
+                    // ==========================================
+
+                    const authResult =
+                        await checkDoctorAuth();
+
+
+                    console.log(
+                        "Doctor authentication checked:",
+                        authResult
+                    );
+
+
+                    // ==========================================
+                    // GO TO DOCTOR DASHBOARD
+                    // ==========================================
+
+                    navigate(
+                        "/doctor-dashboard",
+                        {
+                            replace: true
+                        }
+                    );
+
+                } else {
+
+                    toast.error(
+                        data.message ||
+                        "Doctor login failed"
+                    );
+
+                }
+
+            }
+
         } catch (error) {
 
-            console.log("Login error:", error.response?.data || error);
+            console.error(
+                "================================="
+            );
+
+            console.error(
+                "LOGIN ERROR"
+            );
+
+            console.error(
+                "Status:",
+                error.response?.status
+            );
+
+            console.error(
+                "Response:",
+                error.response?.data
+            );
+
+            console.error(
+                "Message:",
+                error.message
+            );
+
+            console.error(
+                "================================="
+            );
+
 
             toast.error(
                 error.response?.data?.message ||
                 "Invalid credentials"
             );
+
         }
+
     };
 
 
+    // ==========================================
+    // UI
+    // ==========================================
+
     return (
+
         <form
             onSubmit={onSubmitHandler}
             className="min-h-[80vh] flex items-center bg-slate-50"
         >
 
-            <div className="flex flex-col gap-3 m-auto items-start p-8 min-w-[340px] sm:min-w-96 bg-white rounded-2xl shadow-xl border border-slate-100 text-slate-600 text-sm">
+            <div
+                className="
+                    flex
+                    flex-col
+                    gap-3
+                    m-auto
+                    items-start
+                    p-8
+                    min-w-[340px]
+                    sm:min-w-96
+                    bg-white
+                    rounded-2xl
+                    shadow-xl
+                    border
+                    border-slate-100
+                    text-slate-600
+                    text-sm
+                "
+            >
 
-                <p className="text-2xl font-semibold m-auto text-slate-900">
+                {/* ==========================================
+                    TITLE
+                ========================================== */}
+
+                <p
+                    className="
+                        text-2xl
+                        font-semibold
+                        m-auto
+                        text-slate-900
+                    "
+                >
+
                     <span className="text-primary">
                         {state}
-                    </span>{" "}
-                    Login
+                    </span>
+
+                    {" "}Login
+
                 </p>
 
 
+                {/* ==========================================
+                    EMAIL
+                ========================================== */}
+
                 <div className="w-full mt-4">
 
-                    <p className="mb-1 font-medium text-slate-700">Email</p>
+                    <p
+                        className="
+                            mb-1
+                            font-medium
+                            text-slate-700
+                        "
+                    >
+                        Email
+                    </p>
+
 
                     <input
-                        className="border border-slate-300 rounded-lg w-full px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                        className="
+                            border
+                            border-slate-300
+                            rounded-lg
+                            w-full
+                            px-4
+                            py-2.5
+                            focus:outline-none
+                            focus:ring-2
+                            focus:ring-primary/20
+                            focus:border-primary
+                            transition
+                        "
                         type="email"
-                        onChange={(e) => setEmail(e.target.value)}
                         value={email}
+                        onChange={(e) =>
+                            setEmail(e.target.value)
+                        }
                         required
                     />
 
                 </div>
 
+
+                {/* ==========================================
+                    PASSWORD
+                ========================================== */}
 
                 <div className="w-full mt-2">
 
-                    <p className="mb-1 font-medium text-slate-700">Password</p>
+                    <p
+                        className="
+                            mb-1
+                            font-medium
+                            text-slate-700
+                        "
+                    >
+                        Password
+                    </p>
+
 
                     <input
-                        className="border border-slate-300 rounded-lg w-full px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                        className="
+                            border
+                            border-slate-300
+                            rounded-lg
+                            w-full
+                            px-4
+                            py-2.5
+                            focus:outline-none
+                            focus:ring-2
+                            focus:ring-primary/20
+                            focus:border-primary
+                            transition
+                        "
                         type="password"
-                        onChange={(e) => setPassword(e.target.value)}
                         value={password}
+                        onChange={(e) =>
+                            setPassword(e.target.value)
+                        }
                         required
                     />
 
                 </div>
 
 
+                {/* ==========================================
+                    LOGIN BUTTON
+                ========================================== */}
+
                 <button
                     type="submit"
-                    className="bg-primary hover:bg-cyan-700 text-white w-full py-2.5 mt-4 rounded-lg text-base font-medium transition"
+                    className="
+                        bg-primary
+                        hover:bg-cyan-700
+                        text-white
+                        w-full
+                        py-2.5
+                        mt-4
+                        rounded-lg
+                        text-base
+                        font-medium
+                        transition
+                    "
                 >
                     Login
                 </button>
 
 
+                {/* ==========================================
+                    SWITCH LOGIN
+                ========================================== */}
+
                 {state === "Admin" ? (
 
-                    <p className="mt-2 w-full text-center">
+                    <p
+                        className="
+                            mt-2
+                            w-full
+                            text-center
+                        "
+                    >
+
                         Doctor Login?{" "}
 
                         <span
-                            onClick={() => setState("Doctor")}
-                            className="text-primary hover:text-cyan-700 underline cursor-pointer"
+                            onClick={() =>
+                                setState("Doctor")
+                            }
+                            className="
+                                text-primary
+                                hover:text-cyan-700
+                                underline
+                                cursor-pointer
+                            "
                         >
                             Click here
                         </span>
+
                     </p>
 
                 ) : (
 
-                    <p className="mt-2 w-full text-center">
+                    <p
+                        className="
+                            mt-2
+                            w-full
+                            text-center
+                        "
+                    >
+
                         Admin Login?{" "}
 
                         <span
-                            onClick={() => setState("Admin")}
-                            className="text-primary hover:text-cyan-700 underline cursor-pointer"
+                            onClick={() =>
+                                setState("Admin")
+                            }
+                            className="
+                                text-primary
+                                hover:text-cyan-700
+                                underline
+                                cursor-pointer
+                            "
                         >
                             Click here
                         </span>
+
                     </p>
 
                 )}
@@ -171,7 +463,9 @@ const Login = () => {
             </div>
 
         </form>
+
     );
+
 };
 
 export default Login;

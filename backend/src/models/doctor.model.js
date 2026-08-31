@@ -75,6 +75,10 @@ const doctorSchema = new mongoose.Schema(
       of: [String],
       default: {},
     },
+    doctorConfirmed: {
+    type: Boolean,
+    default: false
+  },
   },
   {
     timestamps: true,
@@ -91,7 +95,5 @@ const doctorModel =
   mongoose.models.Doctor ||
   mongoose.model("Doctor", doctorSchema);
 
-export { doctorModel };
-export { doctorModel as Doctor };
 
-export default doctorModel;
+export { doctorModel as Doctor };

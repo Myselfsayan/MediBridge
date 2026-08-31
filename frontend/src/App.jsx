@@ -9,7 +9,7 @@ import About from './pages/About'
 import Appointment from './pages/Appointment'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
-import DemoPayment from './pages/Demopayment'
+import DemoPayment from './pages/DemoPayment'
 import { ToastContainer } from 'react-toastify';
 
 const App = () => {

@@ -249,9 +249,19 @@ const AdminContextProvider = (props) => {
 // CANCEL APPOINTMENT
 // ==========================================
 
+// ==========================================
+// CANCEL APPOINTMENT
+// ==========================================
+
 const cancelAppointment = async (appointmentId) => {
 
     try {
+
+        console.log("=================================");
+        console.log("🔥 ADMIN CANCEL APPOINTMENT");
+        console.log("Appointment ID:", appointmentId);
+        console.log("=================================");
+
 
         const { data } = await axios.post(
             `${backendUrl}/api/v1/admin/cancel-appointment`,
@@ -263,20 +273,76 @@ const cancelAppointment = async (appointmentId) => {
             }
         );
 
+
         if (data.success) {
 
-            toast.success(data.message);
+            console.log(
+                "Payment status:",
+                data.paymentStatus
+            );
 
-            // Refresh appointments
-            getAllAppointments();
+            console.log(
+                "Cancelled:",
+                data.cancelled
+            );
+
+
+            // ==========================================
+            // UPDATE UI IMMEDIATELY
+            // ==========================================
+
+            setAppointments((prevAppointments) => {
+
+                return prevAppointments.map((item) => {
+
+                    if (item._id === appointmentId) {
+
+                        return {
+                            ...item,
+
+                            cancelled: true,
+
+                            paymentStatus:
+                                data.paymentStatus
+
+                        };
+
+                    }
+
+                    return item;
+
+                });
+
+            });
+
+
+            // ==========================================
+            // SUCCESS MESSAGE
+            // ==========================================
+
+            toast.success(
+                data.message ||
+                "Appointment cancelled successfully"
+            );
+
 
         } else {
 
-            toast.error(data.message);
+            toast.error(
+                data.message ||
+                "Failed to cancel appointment"
+            );
 
         }
 
+
     } catch (error) {
+
+        console.error(
+            "Cancel appointment error:",
+            error
+        );
+
 
         toast.error(
             error.response?.data?.message ||

@@ -2,6 +2,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
 import { User } from "../models/user.model.js";
+import { Doctor } from "../models/doctor.model.js";
 
 
 // ==========================================
@@ -76,9 +77,6 @@ export const verifyAdminJWT = asyncHandler(async (req, _, next) => {
 
     try {
 
-        // IMPORTANT:
-        // Admin only uses adminAccessToken
-
         const token =
             req.cookies?.adminAccessToken;
 
@@ -123,3 +121,95 @@ export const verifyAdminJWT = asyncHandler(async (req, _, next) => {
     }
 
 });
+
+
+// ==========================================
+// DOCTOR AUTHENTICATION
+// ==========================================
+
+export const verifyDoctorJWT = asyncHandler(
+    async (req, _, next) => {
+
+        try {
+
+            // ==========================================
+            // GET DOCTOR TOKEN
+            // ==========================================
+
+            const token =
+                req.cookies?.doctorAccessToken;
+
+            if (!token) {
+
+                throw new ApiError(
+                    401,
+                    "Doctor not authenticated"
+                );
+            }
+
+
+            // ==========================================
+            // VERIFY TOKEN
+            // ==========================================
+
+            const decodedToken = jwt.verify(
+                token,
+                process.env.ACCESS_TOKEN_SECRET
+            );
+
+
+            // ==========================================
+            // CHECK DOCTOR ID
+            // ==========================================
+
+            if (!decodedToken?._id) {
+
+                throw new ApiError(
+                    401,
+                    "Invalid doctor access token"
+                );
+            }
+
+
+            // ==========================================
+            // FIND DOCTOR
+            // ==========================================
+
+            const doctor = await Doctor.findById(
+                decodedToken._id
+            ).select("-password");
+
+
+            if (!doctor) {
+
+                throw new ApiError(
+                    401,
+                    "Doctor not found"
+                );
+            }
+
+
+            // ==========================================
+            // ATTACH DOCTOR TO REQUEST
+            // ==========================================
+
+            req.doctor = doctor;
+
+            next();
+
+        } catch (error) {
+
+            console.log(
+                "Doctor JWT verification error:",
+                error.message
+            );
+
+            throw new ApiError(
+                401,
+                error.message ||
+                "Invalid or expired doctor token"
+            );
+        }
+
+    }
+);

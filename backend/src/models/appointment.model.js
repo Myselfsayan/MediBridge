@@ -39,6 +39,10 @@ const appointmentSchema = new mongoose.Schema(
             type: Number,
             required: true
         },
+        confirmed: {
+            type: Boolean,
+            default: false
+        },
 
         slotDate: {
             type: String,
@@ -69,24 +73,17 @@ const appointmentSchema = new mongoose.Schema(
         // PAYMENT STATUS
         // ==========================================
         paymentStatus: {
-            type: String,
-            enum: ["pending", "paid", "failed", "refunded"],
-            default: "pending"
-        },
+    type: String,
+    default: "pending",
+    enum: [
+        "pending",
+        "paid",
+        "failed",
+        "refunded",
+        "cash"
+    ]
+},
 
-
-        // ==========================================
-        // RAZORPAY DETAILS
-        // ==========================================
-        razorpayOrderId: {
-            type: String,
-            default: null
-        },
-
-        razorpayPaymentId: {
-            type: String,
-            default: null
-        }
 
     },
     {

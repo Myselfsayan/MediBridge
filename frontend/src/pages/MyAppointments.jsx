@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 
+
+
 function MyAppointment() {
 
     const {
@@ -17,6 +19,7 @@ function MyAppointment() {
 
     const [appointments, setAppointments] = useState([]);
     const [localPaidAppointments, setLocalPaidAppointments] = useState({});
+        const [loading, setLoading] = useState(false);
 
     const months = [
         "Jan",
@@ -164,25 +167,70 @@ function MyAppointment() {
         }
     };
 
+const handleRefund = async (appointmentId) => {
+
+    try {
+
+        const { data } = await axios.post(
+            `${backendUrl}/api/v1/payment/refund`,
+            {
+                appointmentId
+            }
+        );
+
+        if (!data.success) {
+            toast.error(data.message);
+            return false;
+        }
+
+
+        // ==========================================
+        // UPDATE UI IMMEDIATELY
+        // ==========================================
+
+        setAppointments((prevAppointments) =>
+            prevAppointments.map((appointment) => {
+
+                if (appointment._id === appointmentId) {
+
+                    return {
+                        ...appointment,
+                        paymentStatus: "refunded",
+                        cancelled: true
+                    };
+
+                }
+
+                return appointment;
+
+            })
+        );
+
+
+        toast.success("Appointment cancelled and payment refunded");
+
+        return true;
+
+    } catch (error) {
+
+        console.error("Refund error:", error);
+
+        toast.error(
+            error.response?.data?.message ||
+            "Refund failed"
+        );
+
+        return false;
+    }
+};
 
     // ==========================================
     // CHECK PAYMENT STATUS
     // ==========================================
 
-    const isAppointmentPaid = (appointmentId) => {
-
-        // Context status
-        if (paidAppointments?.[appointmentId]) {
-            return true;
-        }
-
-        // localStorage status
-        if (localPaidAppointments?.[appointmentId]) {
-            return true;
-        }
-
-        return false;
-    };
+const isAppointmentPaid = (appointment) => {
+    return appointment?.paymentStatus === "paid";
+};
 
 
     // ==========================================
@@ -270,8 +318,7 @@ function MyAppointment() {
                     .slice(0, 4)
                     .map((item, index) => {
 
-                        const paid =
-                            isAppointmentPaid(item._id);
+                        const paid = isAppointmentPaid(item);
 
 
                         return (
@@ -420,59 +467,33 @@ function MyAppointment() {
                                             {/* Cancel & Refund */}
 
                                             <button
-                                                type="button"
-                                                onClick={async () => {
+    type="button"
+    onClick={async () => {
 
-                                                    try {
+        const refundSuccess =
+            await handleRefund(item._id);
 
-                                                        const refundSuccess =
-                                                            await cancelAndRefund(
-                                                                item._id
-                                                            );
+        if (refundSuccess) {
 
+            await cancelAppointment(item);
 
-                                                        if (refundSuccess !== false) {
+            setLocalPaidAppointments((previous) => {
 
-                                                            // Immediately update local state
+                const updated = {
+                    ...previous
+                };
 
-                                                            setLocalPaidAppointments(
-                                                                (previous) => {
+                delete updated[item._id];
 
-                                                                    const updated = {
-                                                                        ...previous
-                                                                    };
+                return updated;
+            });
+        }
 
-                                                                    delete updated[
-                                                                        item._id
-                                                                    ];
-
-                                                                    return updated;
-                                                                }
-                                                            );
-
-
-                                                            await cancelAppointment(
-                                                                item
-                                                            );
-
-                                                        }
-
-                                                    } catch (error) {
-
-                                                        console.error(
-                                                            "Cancel & refund error:",
-                                                            error
-                                                        );
-
-                                                    }
-
-                                                }}
-                                                className="text-sm text-stone-500 text-center sm:min-w-48 py-2 border rounded hover:bg-red-600 hover:text-white transition-all duration-300"
-                                            >
-
-                                                Cancel & Refund
-
-                                            </button>
+    }}
+    className="text-sm text-stone-500 text-center sm:min-w-48 py-2 border rounded hover:bg-red-600 hover:text-white transition-all duration-300"
+>
+    Cancel & Refund
+</button>
 
                                         </>
 

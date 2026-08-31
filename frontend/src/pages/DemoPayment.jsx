@@ -1,6 +1,7 @@
-import React, { useContext, useState } from "react";
+import { useContext, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import axios from "axios";
 import { AppContext } from "../context/AppContext";
 
 function DemoPayment() {
@@ -8,7 +9,10 @@ function DemoPayment() {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const { markAppointmentAsPaid } = useContext(AppContext);
+    const {
+        backendUrl,
+        markAppointmentAsPaid
+    } = useContext(AppContext);
 
     const {
         appointmentId,
@@ -20,13 +24,16 @@ function DemoPayment() {
     } = location.state || {};
 
     const [loading, setLoading] = useState(false);
+    console.log("DemoPayment rendered");
+console.log("loading:", loading);
+console.log("appointmentId:", appointmentId);
 
 
     // ==========================================
-    // HANDLE DEMO PAYMENT
+    // PAYMENT SUCCESS
     // ==========================================
 
-    const handlePayment = () => {
+    const handlePaymentSuccess = async () => {
 
         if (!appointmentId) {
             toast.error("Appointment information is missing");
@@ -39,49 +46,155 @@ function DemoPayment() {
 
         setLoading(true);
 
-        // Simulate payment processing
-        setTimeout(() => {
-
-            try {
-
-                // ==========================================
-                // MARK APPOINTMENT AS PAID
-                // ==========================================
-
-                markAppointmentAsPaid(appointmentId);
+        try {
 
 
-                // ==========================================
-                // SUCCESS MESSAGE
-                // ==========================================
-
-                toast.success("Payment successful!");
+console.log("🔥 handlePaymentSuccess called");
+console.log("backendUrl:", backendUrl);
+console.log("appointmentId:", appointmentId);
 
 
-                // ==========================================
-                // RETURN TO APPOINTMENTS
-                // ==========================================
+            // ==========================================
+            // UPDATE BACKEND
+            // pending → paid
+            // ==========================================
 
-                navigate("/my-appointments", {
-                    replace: true
-                });
+            const { data } = await axios.post(
+                `${backendUrl}/api/v1/payment/success`,
+                {
+                    appointmentId
+                }
+            );
 
 
-            } catch (error) {
-
-                console.error(
-                    "Payment error:",
-                    error
-                );
+            if (!data.success) {
 
                 toast.error(
-                    "Payment failed. Please try again."
+                    data.message || "Payment update failed"
                 );
 
                 setLoading(false);
+                return;
             }
 
-        }, 1500);
+
+            // ==========================================
+            // UPDATE LOCAL CONTEXT
+            // ==========================================
+
+            markAppointmentAsPaid(appointmentId);
+
+
+            // ==========================================
+            // SUCCESS MESSAGE
+            // ==========================================
+
+            toast.success("Payment successful!");
+
+
+            // ==========================================
+            // RETURN TO APPOINTMENTS
+            // ==========================================
+
+            navigate("/my-appointments", {
+                replace: true
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Payment success error:",
+                error
+            );
+
+            toast.error(
+                error.response?.data?.message ||
+                "Payment failed. Please try again."
+            );
+
+            setLoading(false);
+        }
+    };
+
+
+    // ==========================================
+    // PAYMENT FAILED
+    // ==========================================
+
+    const handlePaymentFailed = async () => {
+
+        if (!appointmentId) {
+            toast.error("Appointment information is missing");
+            return;
+        }
+
+        if (loading) {
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+
+            console.log("=================================");
+            console.log("DEMO PAYMENT FAILED");
+            console.log("Appointment ID:", appointmentId);
+            console.log("=================================");
+
+
+            // ==========================================
+            // UPDATE BACKEND
+            // pending → failed
+            // ==========================================
+
+            const { data } = await axios.post(
+                `${backendUrl}/api/v1/payment/failed`,
+                {
+                    appointmentId
+                }
+            );
+
+
+            if (!data.success) {
+
+                toast.error(
+                    data.message || "Payment failed"
+                );
+
+                setLoading(false);
+                return;
+            }
+
+
+            // ==========================================
+            // FAILURE MESSAGE
+            // ==========================================
+
+            toast.error("Payment failed.");
+
+
+            // ==========================================
+            // RETURN TO APPOINTMENTS
+            // ==========================================
+
+            navigate("/my-appointments", {
+                replace: true
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Payment failed error:",
+                error
+            );
+
+            toast.error(
+                error.response?.data?.message ||
+                "Unable to update payment status."
+            );
+
+            setLoading(false);
+        }
     };
 
 
@@ -128,21 +241,16 @@ function DemoPayment() {
             <div className="w-full max-w-md border border-slate-200 rounded-xl shadow-sm p-8 bg-white">
 
 
-                {/* ==========================================
-                    TITLE
-                ========================================== */}
+                {/* TITLE */}
 
                 <h1 className="text-2xl font-bold text-slate-900 text-center mb-8">
                     Demo Payment
                 </h1>
 
 
-                {/* ==========================================
-                    APPOINTMENT DETAILS
-                ========================================== */}
+                {/* APPOINTMENT DETAILS */}
 
                 <div className="space-y-4 text-sm text-slate-600">
-
 
                     {/* Doctor */}
 
@@ -221,9 +329,7 @@ function DemoPayment() {
                 </div>
 
 
-                {/* ==========================================
-                    DEMO NOTICE
-                ========================================== */}
+                {/* DEMO NOTICE */}
 
                 <div className="mt-8 p-4 rounded-lg bg-amber-50 border border-amber-200">
 
@@ -235,14 +341,12 @@ function DemoPayment() {
                 </div>
 
 
-                {/* ==========================================
-                    PAY BUTTON
-                ========================================== */}
+                {/* SUCCESS BUTTON */}
 
                 <button
                     type="button"
                     disabled={loading}
-                    onClick={handlePayment}
+                    onClick={handlePaymentSuccess}
                     className="w-full mt-8 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-cyan-700 hover:shadow-md transition-all duration-300 disabled:opacity-50"
                 >
 
@@ -254,9 +358,19 @@ function DemoPayment() {
                 </button>
 
 
-                {/* ==========================================
-                    CANCEL BUTTON
-                ========================================== */}
+                {/* FAILED BUTTON */}
+
+                <button
+                    type="button"
+                    disabled={loading}
+                    onClick={handlePaymentFailed}
+                    className="w-full mt-4 py-3 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition-all duration-300 disabled:opacity-50"
+                >
+                    Payment Failed
+                </button>
+
+
+                {/* CANCEL BUTTON */}
 
                 <button
                     type="button"
@@ -276,3 +390,4 @@ function DemoPayment() {
 }
 
 export default DemoPayment;
+

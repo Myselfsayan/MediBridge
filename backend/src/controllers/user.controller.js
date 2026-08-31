@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { User } from "../models/user.model.js";
-import doctorModel from "../models/doctor.model.js";
+import {Doctor} from "../models/doctor.model.js";
 import appointmentModel from "../models/appointment.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -231,12 +231,12 @@ const bookAppointment = asyncHandler(async (req, res) => {
 
     // Get logged-in user ID from authentication middleware
     const userId = req.user._id;
-
+    // console.log("docId:", docId);
     // Get doctor data
-    const docData = await doctorModel
-        .findById(docId)
+    const docData = await Doctor
+        .findById({_id:docId})
         .select("-password");
-
+        
     if (!docData) {
         throw new ApiError(404, "Doctor not found");
     }
@@ -283,9 +283,10 @@ const bookAppointment = asyncHandler(async (req, res) => {
 
     const newAppointment = new appointmentModel(appointmentData);
     await newAppointment.save();
+    //console.log("Appointment booked:", newAppointment);
 
     // Update doctor's booked slots
-    await doctorModel.findByIdAndUpdate(
+    await Doctor.findByIdAndUpdate(
         docId,
         { slots_booked }
     );
@@ -460,7 +461,7 @@ const cancelAppointment = asyncHandler(async (req, res) => {
 
     // releasing doctor slot
     const { docId, slotDate, slotTime } = appointmentData;
-    const doctorData = await doctorModel.findById(docId);
+    const doctorData = await Doctor.findById(docId);
 
     if (!doctorData) {
         throw new ApiError(404, "Doctor not found");
@@ -473,7 +474,7 @@ const cancelAppointment = asyncHandler(async (req, res) => {
         slots_booked.set(slotDate, updatedSlots);
     }
 
-    await doctorModel.findByIdAndUpdate(
+    await Doctor.findByIdAndUpdate(
         docId,
         { slots_booked }
     );

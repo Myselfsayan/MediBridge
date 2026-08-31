@@ -38,11 +38,13 @@ app.use("/api/v1/status", (req, res) =>
 import adminRouter from "./routes/admin.route.js";
 import doctorRouter from "./routes/doctor.route.js";
 import userRouter from "./routes/user.route.js";
+import paymentRouter from "./routes/payment.route.js";
 
 
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/doctor", doctorRouter);
 app.use("/api/v1/user", userRouter);
+app.use("/api/v1/payment", paymentRouter);
 
 // ================= ERROR HANDLER =================
 // Must be after all routes. Catches ApiError and other errors,
