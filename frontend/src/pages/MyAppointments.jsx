@@ -466,34 +466,38 @@ const isAppointmentPaid = (appointment) => {
 
                                             {/* Cancel & Refund */}
 
-                                            <button
-    type="button"
-    onClick={async () => {
+                                            {!item.doctorConfirmed && (
 
-        const refundSuccess =
-            await handleRefund(item._id);
+                                                <button
+                                                    type="button"
+                                                    onClick={async () => {
 
-        if (refundSuccess) {
+                                                        const refundSuccess =
+                                                            await handleRefund(item._id);
 
-            await cancelAppointment(item);
+                                                        if (refundSuccess) {
 
-            setLocalPaidAppointments((previous) => {
+                                                            await cancelAppointment(item);
 
-                const updated = {
-                    ...previous
-                };
+                                                            setLocalPaidAppointments((previous) => {
 
-                delete updated[item._id];
+                                                                const updated = {
+                                                                    ...previous
+                                                                };
 
-                return updated;
-            });
-        }
+                                                                delete updated[item._id];
 
-    }}
-    className="text-sm text-stone-500 text-center sm:min-w-48 py-2 border rounded hover:bg-red-600 hover:text-white transition-all duration-300"
->
-    Cancel & Refund
-</button>
+                                                                return updated;
+                                                            });
+                                                        }
+
+                                                    }}
+                                                    className="text-sm text-stone-500 text-center sm:min-w-48 py-2 border rounded hover:bg-red-600 hover:text-white transition-all duration-300"
+                                                >
+                                                    Cancel & Refund
+                                                </button>
+
+                                            )}
 
                                         </>
 
