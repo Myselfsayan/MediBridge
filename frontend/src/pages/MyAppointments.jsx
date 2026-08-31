@@ -501,10 +501,26 @@ const isAppointmentPaid = (appointment) => {
 
 
                                     {/* ==========================================
-                                        UNPAID
+                                        UNPAID & DOCTOR CONFIRMED (PAID IN CASH)
                                     ========================================== */}
 
-                                    {!item.cancelled && !paid && (
+                                    {!item.cancelled && !paid && item.doctorConfirmed && (
+
+                                        <button
+                                            type="button"
+                                            className="text-sm text-center sm:min-w-48 py-2 border border-green-500 bg-green-50 text-green-700 rounded font-medium cursor-default flex items-center justify-center gap-1.5"
+                                        >
+                                            Paid in Cash
+                                        </button>
+
+                                    )}
+
+
+                                    {/* ==========================================
+                                        UNPAID & NOT CONFIRMED
+                                    ========================================== */}
+
+                                    {!item.cancelled && !paid && !item.doctorConfirmed && (
 
                                         <>
 

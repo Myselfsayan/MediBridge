@@ -8,7 +8,8 @@ const DoctorAppointments = () => {
         dToken,
         appointments,
         getDoctorAppointments,
-        cancelAppointment
+        cancelAppointment,
+        acceptAppointment
     } = useContext(DoctorContext);
 
     const {
@@ -276,16 +277,35 @@ const DoctorAppointments = () => {
                                         Cancelled
                                     </span>
 
+                                ) : item.doctorConfirmed ? (
+
+                                    <span className="bg-green-50 text-green-600 rounded-full px-3 py-1 text-xs font-medium border border-green-100">
+                                        Accepted
+                                    </span>
+
                                 ) : (
 
-                                    <button
-                                        onClick={() =>
-                                            cancelAppointment(item._id)
-                                        }
-                                        className="text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg px-3 py-1 text-xs font-medium transition cursor-pointer border border-transparent hover:border-red-100"
-                                    >
-                                        Cancel
-                                    </button>
+                                    <div className="flex items-center gap-2">
+
+                                        <button
+                                            onClick={() =>
+                                                acceptAppointment(item._id)
+                                            }
+                                            className="text-green-600 hover:text-green-800 hover:bg-green-50 rounded-lg px-3 py-1 text-xs font-medium transition cursor-pointer border border-transparent hover:border-green-100"
+                                        >
+                                            Accept
+                                        </button>
+
+                                        <button
+                                            onClick={() =>
+                                                cancelAppointment(item._id)
+                                            }
+                                            className="text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg px-3 py-1 text-xs font-medium transition cursor-pointer border border-transparent hover:border-red-100"
+                                        >
+                                            Cancel
+                                        </button>
+
+                                    </div>
 
                                 )}
 

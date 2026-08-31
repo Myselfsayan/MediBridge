@@ -273,6 +273,80 @@ const DoctorContextProvider = (props) => {
 
 
     // ==========================================
+    // DOCTOR ACCEPT APPOINTMENT
+    // ==========================================
+
+    const acceptAppointment = async (appointmentId) => {
+
+        try {
+
+            const { data } = await axios.post(
+                `${backendUrl}/api/v1/doctor/accept-appointment`,
+                {
+                    appointmentId
+                },
+                {
+                    withCredentials: true
+                }
+            );
+
+            if (data.success) {
+
+                setAppointments((previous) =>
+
+                    previous.map((item) => {
+
+                        if (item._id === appointmentId) {
+
+                            return {
+                                ...item,
+                                doctorConfirmed: true
+                            };
+
+                        }
+
+                        return item;
+
+                    })
+
+                );
+
+                toast.success(
+                    data.message ||
+                    "Appointment accepted"
+                );
+
+                return true;
+
+            }
+
+            toast.error(
+                data.message ||
+                "Failed to accept appointment"
+            );
+
+            return false;
+
+        } catch (error) {
+
+            console.error(
+                "Doctor accept error:",
+                error
+            );
+
+            toast.error(
+                error.response?.data?.message ||
+                "Failed to accept appointment"
+            );
+
+            return false;
+
+        }
+
+    };
+
+
+    // ==========================================
     // DOCTOR LOGOUT
     // ==========================================
 
@@ -384,6 +458,8 @@ const DoctorContextProvider = (props) => {
         setAppointments,
 
         getDoctorAppointments,
+
+        acceptAppointment,
 
         cancelAppointment,
 

@@ -7,7 +7,8 @@ import {
     logoutDoctor,
     getDoctorAppointments,
     cancelDoctorAppointment,
-    completeAppointment
+    completeAppointment,
+    acceptDoctorAppointment
 } from "../controllers/doctor.controller.js";
 
 import {
@@ -42,6 +43,12 @@ doctorRouter.post(
     "/logout",
     verifyDoctorJWT,
     logoutDoctor
+);
+
+doctorRouter.post(
+    "/accept-appointment",
+    verifyDoctorJWT,
+    acceptDoctorAppointment
 );
 
 doctorRouter.post(

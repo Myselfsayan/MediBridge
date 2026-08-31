@@ -338,4 +338,57 @@ const completeAppointment = asyncHandler(async (req, res) => {
 
 });
 
-export { changeAvailability, doctorList , loginDoctor , getCurrentDoctor , logoutDoctor , cancelDoctorAppointment , completeAppointment , getDoctorAppointments };
+// =====================================================
+// ACCEPT APPOINTMENT
+// Doctor accepts/confirms an appointment
+// =====================================================
+
+const acceptDoctorAppointment = asyncHandler(async (req, res) => {
+
+    const { appointmentId } = req.body;
+    const doctorId = req.doctor._id;
+
+    if (!appointmentId) {
+        return res.status(400).json({
+            success: false,
+            message: "Appointment ID is required",
+        });
+    }
+
+    const appointment = await appointmentModel.findById(appointmentId);
+
+    if (!appointment) {
+        return res.status(404).json({
+            success: false,
+            message: "Appointment not found",
+        });
+    }
+
+    // Verify appointment belongs to this doctor
+    if (appointment.docId.toString() !== doctorId.toString()) {
+        return res.status(403).json({
+            success: false,
+            message: "Unauthorized action: Appointment does not belong to this doctor",
+        });
+    }
+
+    if (appointment.cancelled) {
+        return res.status(400).json({
+            success: false,
+            message: "Cannot accept a cancelled appointment",
+        });
+    }
+
+    // Set doctorConfirmed to true without altering original payment status
+    appointment.doctorConfirmed = true;
+    await appointment.save();
+
+    return res.status(200).json({
+        success: true,
+        message: "Appointment accepted successfully",
+        appointment,
+        doctorConfirmed: appointment.doctorConfirmed,
+    });
+});
+
+export { changeAvailability, doctorList , loginDoctor , getCurrentDoctor , logoutDoctor , cancelDoctorAppointment , completeAppointment , getDoctorAppointments , acceptDoctorAppointment };
