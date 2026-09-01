@@ -15,11 +15,12 @@ const DoctorContextProvider = (props) => {
     const [authLoading, setAuthLoading] = useState(true);
 
     const [appointments, setAppointments] = useState([]);
+    
+    const [dashData, setDashData] = useState(false);
 
 
-    // ==========================================
+
     // CHECK DOCTOR AUTHENTICATION
-    // ==========================================
 
     const checkDoctorAuth = async () => {
 
@@ -69,11 +70,7 @@ const DoctorContextProvider = (props) => {
 
     };
 
-
-    // ==========================================
     // GET DOCTOR APPOINTMENTS
-    // ==========================================
-
     const getDoctorAppointments = async () => {
 
         try {
@@ -120,11 +117,7 @@ const DoctorContextProvider = (props) => {
 
     };
 
-
-    // ==========================================
     // DOCTOR CANCEL / REJECT APPOINTMENT
-    // ==========================================
-
     const cancelAppointment = async (appointmentId) => {
 
         try {
@@ -196,12 +189,7 @@ const DoctorContextProvider = (props) => {
         }
 
     };
-
-
-    // ==========================================
     // COMPLETE APPOINTMENT
-    // ==========================================
-
     const completeAppointment = async (appointmentId) => {
 
         try {
@@ -270,12 +258,7 @@ const DoctorContextProvider = (props) => {
         }
 
     };
-
-
-    // ==========================================
     // DOCTOR ACCEPT APPOINTMENT
-    // ==========================================
-
     const acceptAppointment = async (appointmentId) => {
 
         try {
@@ -344,12 +327,7 @@ const DoctorContextProvider = (props) => {
         }
 
     };
-
-
-    // ==========================================
     // DOCTOR LOGOUT
-    // ==========================================
-
     const logoutDoctor = async () => {
 
         try {
@@ -400,23 +378,36 @@ const DoctorContextProvider = (props) => {
         }
 
     };
+    const getDashData = async () => {
+    try {
+        const { data } = await axios.get(
+            `${backendUrl}/api/v1/doctor/doctor-dashboard`,
+            {
+                withCredentials: true
+            }
+        );
 
-
-    // ==========================================
+        if (data.success) {
+            setDashData(data.data);
+            console.log(data.data);
+        } else {
+            toast.error(data.message);
+        }
+    } catch (error) {
+        console.log(error);
+        toast.error(
+            error.response?.data?.message || error.message
+        );
+    }
+};
     // CHECK AUTH ON APP START
-    // ==========================================
-
     useEffect(() => {
 
         checkDoctorAuth();
 
     }, []);
 
-
-    // ==========================================
     // LOAD APPOINTMENTS AFTER DOCTOR LOGIN
-    // ==========================================
-
     useEffect(() => {
 
         if (
@@ -433,10 +424,7 @@ const DoctorContextProvider = (props) => {
         doctorData?._id
     ]);
 
-
-    // ==========================================
     // CONTEXT VALUE
-    // ==========================================
 
     const value = {
 
@@ -463,7 +451,10 @@ const DoctorContextProvider = (props) => {
 
         cancelAppointment,
 
-        completeAppointment
+        completeAppointment,
+        dashData,
+        getDashData,
+        setDashData
 
     };
 

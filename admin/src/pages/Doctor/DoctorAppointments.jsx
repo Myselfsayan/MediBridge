@@ -77,46 +77,57 @@ const DoctorAppointments = () => {
     // ==========================================
     // PAYMENT STATUS
     // ==========================================
+const getPaymentStatus = (appointment) => {
 
-    const getPaymentStatus = (paymentStatus) => {
-
-        if (paymentStatus === "paid") {
-
-            return (
-                <span className="bg-green-50 text-green-600 border border-green-100 rounded-full px-3 py-1 text-xs font-medium">
-                    Paid
-                </span>
-            );
-
-        }
-
-        if (paymentStatus === "refunded") {
-
-            return (
-                <span className="bg-purple-50 text-purple-600 border border-purple-100 rounded-full px-3 py-1 text-xs font-medium">
-                    Refunded
-                </span>
-            );
-
-        }
-
-        if (paymentStatus === "failed") {
-
-            return (
-                <span className="bg-red-50 text-red-600 border border-red-100 rounded-full px-3 py-1 text-xs font-medium">
-                    Failed
-                </span>
-            );
-
-        }
-
+    // Online payment
+    if (appointment.paymentStatus === "paid") {
         return (
-            <span className="bg-yellow-50 text-yellow-600 border border-yellow-100 rounded-full px-3 py-1 text-xs font-medium">
-                Pending
+            <span className="bg-green-50 text-green-600 border border-green-100 rounded-full px-3 py-1 text-xs font-medium">
+                Paid
             </span>
         );
+    }
 
-    };
+    // Cash payment
+    if (
+        appointment.paymentStatus === "cash" ||
+        (
+            appointment.paymentStatus === "pending" &&
+            appointment.doctorConfirmed
+        )
+    ) {
+        return (
+            <span className="bg-blue-50 text-blue-600 border border-blue-100 rounded-full px-3 py-1 text-xs font-medium">
+                Paid in Cash
+            </span>
+        );
+    }
+
+    // Refunded
+    if (appointment.paymentStatus === "refunded") {
+        return (
+            <span className="bg-purple-50 text-purple-600 border border-purple-100 rounded-full px-3 py-1 text-xs font-medium">
+                Refunded
+            </span>
+        );
+    }
+
+    // Failed
+    if (appointment.paymentStatus === "failed") {
+        return (
+            <span className="bg-red-50 text-red-600 border border-red-100 rounded-full px-3 py-1 text-xs font-medium">
+                Failed
+            </span>
+        );
+    }
+
+    // Pending
+    return (
+        <span className="bg-yellow-50 text-yellow-600 border border-yellow-100 rounded-full px-3 py-1 text-xs font-medium">
+            Pending
+        </span>
+    );
+};
 
 
     // ==========================================
@@ -218,7 +229,7 @@ const DoctorAppointments = () => {
                             <div>
 
                                 {getPaymentStatus(
-                                    item.paymentStatus
+                                    item
                                 )}
 
                             </div>

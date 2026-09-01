@@ -379,8 +379,14 @@ const acceptDoctorAppointment = asyncHandler(async (req, res) => {
         });
     }
 
-    // Set doctorConfirmed to true without altering original payment status
+    // Doctor accepts appointment
     appointment.doctorConfirmed = true;
+
+    // Pending payment means user will pay cash
+    if (appointment.paymentStatus === "pending") {
+        appointment.paymentStatus = "cash";
+    }
+
     await appointment.save();
 
     return res.status(200).json({
@@ -388,7 +394,95 @@ const acceptDoctorAppointment = asyncHandler(async (req, res) => {
         message: "Appointment accepted successfully",
         appointment,
         doctorConfirmed: appointment.doctorConfirmed,
+        paymentStatus: appointment.paymentStatus,
     });
 });
 
-export { changeAvailability, doctorList , loginDoctor , getCurrentDoctor , logoutDoctor , cancelDoctorAppointment , completeAppointment , getDoctorAppointments , acceptDoctorAppointment };
+
+// DOCTOR DASHBOARD
+
+
+const getDoctorDashboard = asyncHandler(async (req, res) => {
+
+    // Doctor is already verified by verifyDoctorJWT
+    const doctorId = req.doctor._id;
+
+    // Get all appointments belonging to this doctor
+    const appointments = await appointmentModel
+        .find({ docId: doctorId })
+        .sort({ createdAt: -1 });
+
+
+    // CALCULATE TOTAL EARNINGS
+
+
+    let earnings = 0;
+
+    appointments.forEach((item) => {
+
+        // Do not count cancelled/refunded appointments
+        if (item.cancelled) {
+            return;
+        }
+
+        // Online payment completed
+        if (item.paymentStatus === "paid") {
+            earnings += item.amount;
+        }
+
+        // Cash payment received after doctor completes appointment
+        else if (item.paymentStatus === "cash") {
+            earnings += item.amount;
+        }
+    });
+
+    // CALCULATE UNIQUE PATIENTS
+
+    const patients = [];
+
+    appointments.forEach((item) => {
+
+        const userId = item.userId?.toString();
+
+        if (userId && !patients.includes(userId)) {
+            patients.push(userId);
+        }
+    });
+
+    // ==========================================
+    // DASHBOARD DATA
+    // ==========================================
+
+    const dashData = {
+        earnings,
+        appointments: appointments.length,
+        patients: patients.length,
+
+        // Already sorted newest first
+        latestAppointments: appointments.slice(0, 5)
+    };
+
+    // ==========================================
+    // RESPONSE
+    // ==========================================
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            dashData,
+            "Doctor dashboard data fetched successfully"
+        )
+    );
+});
+
+export { changeAvailability , 
+        doctorList , 
+        loginDoctor , 
+        getCurrentDoctor , 
+        logoutDoctor , 
+        cancelDoctorAppointment , 
+        completeAppointment , 
+        getDoctorAppointments , 
+        acceptDoctorAppointment , 
+        getDoctorDashboard 
+    };
