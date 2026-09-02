@@ -1,6 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import {Doctor} from "../models/doctor.model.js";
+import {User} from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { ApiError } from "../utils/ApiError.js";
@@ -437,8 +438,9 @@ const getDoctorDashboard = asyncHandler(async (req, res) => {
         .sort({ createdAt: -1 });
 
 
+    // ==========================================
     // CALCULATE TOTAL EARNINGS
-
+    // ==========================================
 
     let earnings = 0;
 
@@ -460,7 +462,10 @@ const getDoctorDashboard = asyncHandler(async (req, res) => {
         }
     });
 
+
+    // ==========================================
     // CALCULATE UNIQUE PATIENTS
+    // ==========================================
 
     const patients = [];
 
@@ -473,6 +478,33 @@ const getDoctorDashboard = asyncHandler(async (req, res) => {
         }
     });
 
+
+    // ==========================================
+    // GET CURRENT USER DATA
+    // ==========================================
+
+    const latestAppointments = await Promise.all(
+        appointments.slice(0, 5).map(async (item) => {
+
+            const appointment = item.toObject();
+
+            const currentUser = await User
+                .findById(item.userId)
+                .select("name image");
+
+            if (currentUser) {
+                appointment.userData = {
+                    ...appointment.userData,
+                    name: currentUser.name,
+                    image: currentUser.image
+                };
+            }
+
+            return appointment;
+        })
+    );
+
+
     // ==========================================
     // DASHBOARD DATA
     // ==========================================
@@ -481,10 +513,9 @@ const getDoctorDashboard = asyncHandler(async (req, res) => {
         earnings,
         appointments: appointments.length,
         patients: patients.length,
-
-        // Already sorted newest first
-        latestAppointments: appointments.slice(0, 5)
+        latestAppointments
     };
+
 
     // ==========================================
     // RESPONSE
