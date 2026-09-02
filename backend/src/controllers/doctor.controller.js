@@ -57,10 +57,6 @@ const logoutDoctor = asyncHandler(async (req, res) => {
         )
     );
 });
-// ==========================================
-// GET DOCTOR APPOINTMENTS
-// ==========================================
-
 const getDoctorAppointments = asyncHandler(
     async (req, res) => {
 
@@ -68,15 +64,42 @@ const getDoctorAppointments = asyncHandler(
         const doctorId = req.doctor._id;
 
         // Get all appointments belonging to this doctor
-        const appointments = await appointmentModel.find({
-            docId: doctorId
-        });
+        const appointments = await appointmentModel
+            .find({ docId: doctorId })
+            .sort({ createdAt: -1 })
+            .lean();
+
+        // GET CURRENT USER PROFILE FOR EACH APPOINTMENT
+
+        const updatedAppointments = await Promise.all(
+            appointments.map(async (appointment) => {
+
+                const currentUser = await User
+                    .findById(appointment.userId)
+                    .select("name image dob")
+                    .lean();
+
+                // If user still exists, use CURRENT profile
+                if (currentUser) {
+
+                    appointment.userData = {
+                        ...appointment.userData,
+                        name: currentUser.name,
+                        image: currentUser.image,
+                        dob: currentUser.dob
+                    };
+
+                }
+
+                return appointment;
+            })
+        );
 
         return res.status(200).json(
             new ApiResponse(
                 200,
                 {
-                    appointments
+                    appointments: updatedAppointments
                 },
                 "Doctor appointments fetched successfully"
             )
@@ -84,9 +107,7 @@ const getDoctorAppointments = asyncHandler(
     }
 );
 
-
 // DOCTOR LOGIN
-
 
 const loginDoctor = asyncHandler(async (req, res) => {
 
@@ -191,7 +212,6 @@ const loginDoctor = asyncHandler(async (req, res) => {
             )
         );
 });
-
 const getCurrentDoctor = asyncHandler(async (req, res) => {
 
     const doctor = req.doctor;
@@ -210,12 +230,9 @@ const getCurrentDoctor = asyncHandler(async (req, res) => {
         )
     );
 });
-
-// =====================================================
 // DOCTOR CANCEL APPOINTMENT
 // pending → pending
 // paid → refunded
-// =====================================================
 
 const cancelDoctorAppointment = asyncHandler(async (req, res) => {
 
@@ -319,11 +336,8 @@ const cancelDoctorAppointment = asyncHandler(async (req, res) => {
         cancelled: appointment.cancelled,
     });
 });
-
-// =====================================================
 // COMPLETE APPOINTMENT
 // Doctor completes an appointment
-// =====================================================
 
 const completeAppointment = asyncHandler(async (req, res) => {
 
@@ -363,10 +377,8 @@ const completeAppointment = asyncHandler(async (req, res) => {
 
 });
 
-// =====================================================
 // ACCEPT APPOINTMENT
 // Doctor accepts/confirms an appointment
-// =====================================================
 
 const acceptDoctorAppointment = asyncHandler(async (req, res) => {
 
