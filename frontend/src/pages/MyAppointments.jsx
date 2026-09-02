@@ -4,22 +4,24 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-
-
 function MyAppointment() {
 
     const {
         backendUrl,
         isLoggedIn,
-        paidAppointments,
-        cancelAndRefund
+        paidAppointments
     } = useContext(AppContext);
 
     const navigate = useNavigate();
 
     const [appointments, setAppointments] = useState([]);
     const [localPaidAppointments, setLocalPaidAppointments] = useState({});
-        const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
+
+
+    // ==========================================
+    // MONTHS
+    // ==========================================
 
     const months = [
         "Jan",
@@ -75,6 +77,10 @@ function MyAppointment() {
 
         const dateArray = slotDate.split("_");
 
+        if (dateArray.length !== 3) {
+            return slotDate;
+        }
+
         return (
             dateArray[0] +
             " " +
@@ -92,6 +98,8 @@ function MyAppointment() {
     const getUserAppointments = async () => {
 
         try {
+
+            setLoading(true);
 
             const { data } = await axios.get(
                 `${backendUrl}/api/v1/user/appointments`,
@@ -117,12 +125,32 @@ function MyAppointment() {
 
         } catch (error) {
 
+            console.error(
+                "Get appointments error:",
+                error
+            );
+
             toast.error(
                 error.response?.data?.message ||
                 error.message ||
                 "Something went wrong"
             );
+
+        } finally {
+
+            setLoading(false);
         }
+    };
+
+
+    // ==========================================
+    // CHECK PAYMENT STATUS
+    // ==========================================
+
+    const isAppointmentPaid = (appointment) => {
+
+        return appointment?.paymentStatus === "paid";
+
     };
 
 
@@ -159,6 +187,11 @@ function MyAppointment() {
 
         } catch (error) {
 
+            console.error(
+                "Cancel appointment error:",
+                error
+            );
+
             toast.error(
                 error.response?.data?.message ||
                 error.message ||
@@ -167,70 +200,79 @@ function MyAppointment() {
         }
     };
 
-const handleRefund = async (appointmentId) => {
 
-    try {
+    // ==========================================
+    // REFUND
+    // ==========================================
 
-        const { data } = await axios.post(
-            `${backendUrl}/api/v1/payment/refund`,
-            {
-                appointmentId
+    const handleRefund = async (appointmentId) => {
+
+        try {
+
+            const { data } = await axios.post(
+                `${backendUrl}/api/v1/payment/refund`,
+                {
+                    appointmentId
+                },
+                {
+                    withCredentials: true
+                }
+            );
+
+
+            if (!data.success) {
+
+                toast.error(data.message);
+
+                return false;
             }
-        );
 
-        if (!data.success) {
-            toast.error(data.message);
+
+            // ==========================================
+            // UPDATE APPOINTMENT LOCALLY
+            // ==========================================
+
+            setAppointments((prevAppointments) =>
+                prevAppointments.map((appointment) => {
+
+                    if (appointment._id === appointmentId) {
+
+                        return {
+                            ...appointment,
+                            paymentStatus: "refunded",
+                            cancelled: true
+                        };
+
+                    }
+
+                    return appointment;
+
+                })
+            );
+
+
+            toast.success(
+                "Appointment cancelled and payment refunded"
+            );
+
+
+            return true;
+
+        } catch (error) {
+
+            console.error(
+                "Refund error:",
+                error
+            );
+
+            toast.error(
+                error.response?.data?.message ||
+                "Refund failed"
+            );
+
             return false;
         }
-
-
-        // ==========================================
-        // UPDATE UI IMMEDIATELY
-        // ==========================================
-
-        setAppointments((prevAppointments) =>
-            prevAppointments.map((appointment) => {
-
-                if (appointment._id === appointmentId) {
-
-                    return {
-                        ...appointment,
-                        paymentStatus: "refunded",
-                        cancelled: true
-                    };
-
-                }
-
-                return appointment;
-
-            })
-        );
-
-
-        toast.success("Appointment cancelled and payment refunded");
-
-        return true;
-
-    } catch (error) {
-
-        console.error("Refund error:", error);
-
-        toast.error(
-            error.response?.data?.message ||
-            "Refund failed"
-        );
-
-        return false;
-    }
-};
-
-    // ==========================================
-    // CHECK PAYMENT STATUS
-    // ==========================================
-
-const isAppointmentPaid = (appointment) => {
-    return appointment?.paymentStatus === "paid";
-};
+    };
 
 
     // ==========================================
@@ -244,14 +286,14 @@ const isAppointmentPaid = (appointment) => {
             getUserAppointments();
 
             loadPaymentStatus();
+
         }
 
     }, [isLoggedIn]);
 
 
     // ==========================================
-    // UPDATE PAYMENT STATUS WHEN PAGE BECOMES
-    // ACTIVE AGAIN
+    // REFRESH WHEN WINDOW GETS FOCUS
     // ==========================================
 
     useEffect(() => {
@@ -259,6 +301,9 @@ const isAppointmentPaid = (appointment) => {
         const handleFocus = () => {
 
             loadPaymentStatus();
+
+            getUserAppointments();
+
         };
 
 
@@ -281,7 +326,7 @@ const isAppointmentPaid = (appointment) => {
 
 
     // ==========================================
-    // KEEP LOCAL PAYMENT STATE IN SYNC
+    // SYNC PAYMENT STATE
     // ==========================================
 
     useEffect(() => {
@@ -292,7 +337,7 @@ const isAppointmentPaid = (appointment) => {
 
 
     // ==========================================
-    // RENDER
+    // RETURN
     // ==========================================
 
     return (
@@ -309,297 +354,332 @@ const isAppointmentPaid = (appointment) => {
 
 
             {/* ==========================================
-                APPOINTMENTS
+                LOADING
             ========================================== */}
 
-            <div>
+            {loading && appointments.length === 0 ? (
 
-                {appointments
-                    .slice(0, 4)
-                    .map((item, index) => {
+                <p className="py-5 text-sm text-gray-500">
+                    Loading appointments...
+                </p>
 
-                        const paid = isAppointmentPaid(item);
+            ) : (
 
+                <div>
 
-                        return (
+                    {appointments
+                        .slice(0, 10)
+                        .map((item, index) => {
 
-                            <div
-                                className="grid grid-cols-[1fr_2fr] gap-4 sm:flex sm:gap-6 py-2 border-b"
-                                key={item._id || index}
-                            >
-
-
-                                {/* ==========================================
-                                    DOCTOR IMAGE
-                                ========================================== */}
-
-                                <div>
-
-                                    <img
-                                        className="w-32 bg-indigo-50"
-                                        src={item.docData?.image}
-                                        alt=""
-                                    />
-
-                                </div>
+                            const paid =
+                                isAppointmentPaid(item);
 
 
-                                {/* ==========================================
-                                    DOCTOR DETAILS
-                                ========================================== */}
+                            return (
 
-                                <div className="flex-1 text-sm text-zinc-600">
+                                <div
+                                    className="grid grid-cols-[1fr_2fr] gap-4 sm:flex sm:gap-6 py-2 border-b"
+                                    key={item._id || index}
+                                >
 
-                                    <p className="text-neutral-800 font-semibold">
-                                        {item.docData?.name}
-                                    </p>
+                                    {/* ==========================================
+                                        DOCTOR IMAGE
+                                    ========================================== */}
 
+                                    <div>
 
-                                    <p>
-                                        {item.docData?.speciality}
-                                    </p>
+                                        <img
+                                            className="w-32 bg-indigo-50"
+                                            src={item.docData?.image}
+                                            alt=""
+                                        />
 
-
-                                    <p className="text-zinc-700 font-medium mt-1">
-                                        Address:
-                                    </p>
-
-
-                                    <p className="text-xs">
-                                        {item.docData?.address?.line1}
-                                    </p>
-
-
-                                    <p className="text-xs">
-                                        {item.docData?.address?.line2}
-                                    </p>
-
-
-                                    {/* Date & Time */}
-
-                                    <p className="text-xs mt-1">
-
-                                        <span className="text-sm text-neutral-700 font-medium">
-                                            Date & Time:
-                                        </span>
-
-                                        {" "}
-
-                                        {slotDateFormat(
-                                            item.slotDate
-                                        )}
-
-                                        {" | "}
-
-                                        {item.slotTime}
-
-                                    </p>
-
-                                </div>
-
-
-                                <div></div>
-
-
-                                {/* ==========================================
-                                    BUTTONS
-                                ========================================== */}
-
-                                <div className="flex flex-col gap-2 justify-end">
+                                    </div>
 
 
                                     {/* ==========================================
-                                        CANCELLED
+                                        DOCTOR DETAILS
                                     ========================================== */}
 
-                                    {item.cancelled && (
+                                    <div className="flex-1 text-sm text-zinc-600">
 
-                                        <button
-                                            type="button"
-                                            className="sm:min-w-48 py-2 border border-red-500 text-red-500 rounded"
-                                        >
-                                            Cancelled
-                                        </button>
+                                        <p className="text-neutral-800 font-semibold">
+                                            {item.docData?.name}
+                                        </p>
 
-                                    )}
+
+                                        <p>
+                                            {item.docData?.speciality}
+                                        </p>
+
+
+                                        <p className="text-zinc-700 font-medium mt-1">
+                                            Address:
+                                        </p>
+
+
+                                        <p className="text-xs">
+                                            {item.docData?.address?.line1}
+                                        </p>
+
+
+                                        <p className="text-xs">
+                                            {item.docData?.address?.line2}
+                                        </p>
+
+
+                                        {/* DATE + TIME */}
+
+                                        <p className="text-xs mt-1">
+
+                                            <span className="text-sm text-neutral-700 font-medium">
+                                                Date & Time:
+                                            </span>
+
+                                            {" "}
+
+                                            {slotDateFormat(
+                                                item.slotDate
+                                            )}
+
+                                            {" | "}
+
+                                            {item.slotTime}
+
+                                        </p>
+
+                                    </div>
+
+
+                                    <div></div>
 
 
                                     {/* ==========================================
-                                        PAID
+                                        STATUS / ACTIONS
                                     ========================================== */}
 
-                                    {!item.cancelled && paid && (
-
-                                        <>
-
-                                            <button
-                                                type="button"
-                                                className="text-sm text-center sm:min-w-48 py-2 border border-green-500 bg-green-50 text-green-700 rounded font-medium cursor-default flex items-center justify-center gap-1.5"
-                                            >
-
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="14"
-                                                    height="14"
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    strokeWidth="2.5"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                >
-
-                                                    <circle
-                                                        cx="12"
-                                                        cy="12"
-                                                        r="10"
-                                                    />
-
-                                                    <path d="m9 12 2 2 4-4" />
-
-                                                </svg>
-
-                                                Paid
-
-                                            </button>
+                                    <div className="flex flex-col gap-2 justify-end">
 
 
-                                            {/* Cancel & Refund */}
+                                        {/* ==================================================
+                                            1. CANCELLED
+                                            
+                                            ALWAYS SHOW CANCELLED
+                                            
+                                            If paymentStatus === refunded,
+                                            ALSO SHOW REFUNDED.
+                                        ================================================== */}
 
-                                            {!item.doctorConfirmed && (
+                                        {item.cancelled && (
+
+                                            <>
+
+                                                {/* CANCELLED */}
 
                                                 <button
                                                     type="button"
-                                                    onClick={async () => {
-
-                                                        const refundSuccess =
-                                                            await handleRefund(item._id);
-
-                                                        if (refundSuccess) {
-
-                                                            await cancelAppointment(item);
-
-                                                            setLocalPaidAppointments((previous) => {
-
-                                                                const updated = {
-                                                                    ...previous
-                                                                };
-
-                                                                delete updated[item._id];
-
-                                                                return updated;
-                                                            });
-                                                        }
-
-                                                    }}
-                                                    className="text-sm text-stone-500 text-center sm:min-w-48 py-2 border rounded hover:bg-red-600 hover:text-white transition-all duration-300"
+                                                    className="text-sm text-center sm:min-w-48 py-2 border border-red-500 bg-red-50 text-red-600 rounded font-medium cursor-default"
                                                 >
-                                                    Cancel & Refund
+                                                    Cancelled
+                                                </button>
+
+
+                                                {/* REFUNDED */}
+
+                                                {item.paymentStatus === "refunded" && (
+
+                                                    <button
+                                                        type="button"
+                                                        className="text-sm text-center sm:min-w-48 py-2 border border-green-500 bg-green-50 text-green-700 rounded font-medium cursor-default"
+                                                    >
+                                                        Refunded
+                                                    </button>
+
+                                                )}
+
+                                            </>
+
+                                        )}
+
+
+                                        {/* ==================================================
+                                            2. APPOINTMENT COMPLETED
+                                            
+                                            ONLY WHEN:
+                                            cancelled = false
+                                            doctorConfirmed = true
+                                        ================================================== */}
+
+                                        {!item.cancelled &&
+                                            item.doctorConfirmed && (
+
+                                                <button
+                                                    type="button"
+                                                    className="text-sm text-center sm:min-w-48 py-2 border border-green-500 bg-green-50 text-green-700 rounded font-medium cursor-default"
+                                                >
+                                                    Appointment Completed
                                                 </button>
 
                                             )}
 
-                                        </>
 
-                                    )}
+                                        {/* ==================================================
+                                            3. PAID
+                                            
+                                            ONLY WHEN:
+                                            cancelled = false
+                                            doctorConfirmed = false
+                                            paymentStatus = paid
+                                        ================================================== */}
+
+                                        {!item.cancelled &&
+                                            !item.doctorConfirmed &&
+                                            item.paymentStatus === "paid" && (
+
+                                                <>
+
+                                                    <button
+                                                        type="button"
+                                                        className="text-sm text-center sm:min-w-48 py-2 border border-green-500 bg-green-50 text-green-700 rounded font-medium cursor-default"
+                                                    >
+                                                        Paid
+                                                    </button>
 
 
-                                    {/* ==========================================
-                                        UNPAID & DOCTOR CONFIRMED (PAID IN CASH)
-                                    ========================================== */}
+                                                    {/* CANCEL + REFUND */}
 
-                                    {!item.cancelled && !paid && item.doctorConfirmed && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={async () => {
 
-                                        <button
-                                            type="button"
-                                            className="text-sm text-center sm:min-w-48 py-2 border border-green-500 bg-green-50 text-green-700 rounded font-medium cursor-default flex items-center justify-center gap-1.5"
-                                        >
-                                            Paid in Cash
-                                        </button>
-
-                                    )}
+                                                            const refundSuccess =
+                                                                await handleRefund(
+                                                                    item._id
+                                                                );
 
 
-                                    {/* ==========================================
-                                        UNPAID & NOT CONFIRMED
-                                    ========================================== */}
+                                                            if (refundSuccess) {
 
-                                    {!item.cancelled && !paid && !item.doctorConfirmed && (
+                                                                await cancelAppointment(
+                                                                    item
+                                                                );
 
-                                        <>
 
-                                            {/* Pay Online */}
+                                                                setLocalPaidAppointments(
+                                                                    (previous) => {
 
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    navigate(
-                                                        "/demo-payment",
-                                                        {
-                                                            state: {
+                                                                        const updated = {
+                                                                            ...previous
+                                                                        };
 
-                                                                appointmentId:
-                                                                    item._id,
+                                                                        delete updated[
+                                                                            item._id
+                                                                        ];
 
-                                                                doctorName:
-                                                                    item.docData?.name,
+                                                                        return updated;
 
-                                                                speciality:
-                                                                    item.docData?.speciality,
+                                                                    }
+                                                                );
 
-                                                                appointmentDate:
-                                                                    slotDateFormat(
-                                                                        item.slotDate
-                                                                    ),
-
-                                                                appointmentTime:
-                                                                    item.slotTime,
-
-                                                                fees:
-                                                                    item.docData?.fees ||
-                                                                    item.amount ||
-                                                                    500
                                                             }
+
+                                                        }}
+                                                        className="text-sm text-stone-500 text-center sm:min-w-48 py-2 border rounded hover:bg-red-600 hover:text-white transition-all duration-300"
+                                                    >
+                                                        Cancel & Refund
+                                                    </button>
+
+                                                </>
+
+                                            )}
+
+
+                                        {/* ==================================================
+                                            4. UNPAID / PENDING
+                                            
+                                            ONLY WHEN:
+                                            cancelled = false
+                                            doctorConfirmed = false
+                                            paymentStatus != paid
+                                        ================================================== */}
+
+                                        {!item.cancelled &&
+                                            !item.doctorConfirmed &&
+                                            item.paymentStatus !== "paid" && (
+
+                                                <>
+
+                                                    {/* PAY ONLINE */}
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            navigate(
+                                                                "/demo-payment",
+                                                                {
+                                                                    state: {
+
+                                                                        appointmentId:
+                                                                            item._id,
+
+                                                                        doctorName:
+                                                                            item.docData?.name,
+
+                                                                        speciality:
+                                                                            item.docData?.speciality,
+
+                                                                        appointmentDate:
+                                                                            slotDateFormat(
+                                                                                item.slotDate
+                                                                            ),
+
+                                                                        appointmentTime:
+                                                                            item.slotTime,
+
+                                                                        fees:
+                                                                            item.docData?.fees ||
+                                                                            item.amount ||
+                                                                            500
+
+                                                                    }
+                                                                }
+                                                            )
                                                         }
-                                                    )
-                                                }
-                                                className="text-sm text-stone-500 text-center sm:min-w-48 py-2 border rounded hover:bg-primary hover:text-white transition-all duration-300"
-                                            >
-
-                                                Pay Online
-
-                                            </button>
+                                                        className="text-sm text-stone-500 text-center sm:min-w-48 py-2 border rounded hover:bg-primary hover:text-white transition-all duration-300"
+                                                    >
+                                                        Pay Online
+                                                    </button>
 
 
-                                            {/* Cancel Appointment */}
+                                                    {/* CANCEL APPOINTMENT */}
 
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    cancelAppointment(
-                                                        item
-                                                    )
-                                                }
-                                                className="text-sm text-stone-500 text-center sm:min-w-48 py-2 border rounded hover:bg-red-600 hover:text-white transition-all duration-300"
-                                            >
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            cancelAppointment(
+                                                                item
+                                                            )
+                                                        }
+                                                        className="text-sm text-stone-500 text-center sm:min-w-48 py-2 border rounded hover:bg-red-600 hover:text-white transition-all duration-300"
+                                                    >
+                                                        Cancel appointment
+                                                    </button>
 
-                                                Cancel appointment
+                                                </>
 
-                                            </button>
+                                            )}
 
-                                        </>
-
-                                    )}
+                                    </div>
 
                                 </div>
 
-                            </div>
+                            );
 
-                        );
+                        })}
 
-                    })}
+                </div>
 
-            </div>
+            )}
 
         </div>
     );
