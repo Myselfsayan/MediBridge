@@ -2,13 +2,12 @@
   <defs>
     <linearGradient id="favGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#06B6D4" />
-      <stop offset="60%" stop-color="#0891B2" />
-      <stop offset="100%" stop-color="#0E7490" />
+      <stop offset="100%" stop-color="#0891B2" />
     </linearGradient>
   </defs>
-  <rect width="48" height="48" rx="13" fill="url(#favGrad)" />
+  <rect width="48" height="48" rx="12" fill="url(#favGrad)" />
   <path 
-    d="M 11 37 V 11 H 16.5 L 24 22.5 L 31.5 11 H 37 V 37 H 32.2 V 19.5 L 25.5 29.5 H 22.5 L 15.8 19.5 V 37 Z" 
+    d="M 14 36 V 12 H 18.4 L 24 23.5 L 29.6 12 H 34 V 36 H 30 V 18.2 L 25.1 28.5 H 22.9 L 18 18.2 V 36 Z" 
     fill="#FFFFFF" 
   />
 </svg>
