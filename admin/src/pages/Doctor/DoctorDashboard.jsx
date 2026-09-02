@@ -10,7 +10,7 @@ const DoctorDashboard = () => {
         cancelAppointment,
     } = useContext(DoctorContext);
 
-    const { currency, slotDateFormat } = useContext(AppContext);
+    const { currency , formatDate } = useContext(AppContext);
 
     useEffect(() => {
         getDashData();
@@ -121,8 +121,8 @@ const DoctorDashboard = () => {
                                     </p>
 
                                     <p className="text-gray-600">
-                                        {slotDateFormat
-                                            ? slotDateFormat(item.slotDate)
+                                        {formatDate
+                                            ? formatDate(item.slotDate)
                                             : item.slotDate}
                                     </p>
                                 </div>

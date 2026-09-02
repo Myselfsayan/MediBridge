@@ -9,7 +9,9 @@ import {
     cancelDoctorAppointment,
     completeAppointment,
     acceptDoctorAppointment,
-    getDoctorDashboard
+    getDoctorDashboard,
+    doctorProfile,
+    updateDoctorProfile
 } from "../controllers/doctor.controller.js";
 
 import {
@@ -61,5 +63,7 @@ doctorRouter.post(
 doctorRouter.post("/complete-appointment", verifyDoctorJWT, completeAppointment);
 
 doctorRouter.get("/doctor-dashboard", verifyDoctorJWT, getDoctorDashboard);
+doctorRouter.get("/profile", verifyDoctorJWT, doctorProfile);
+doctorRouter.put("/update-profile", verifyDoctorJWT, updateDoctorProfile);
 
 export default doctorRouter;

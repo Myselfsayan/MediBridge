@@ -434,11 +434,7 @@ const acceptDoctorAppointment = asyncHandler(async (req, res) => {
         paymentStatus: appointment.paymentStatus,
     });
 });
-
-
 // DOCTOR DASHBOARD
-
-
 const getDoctorDashboard = asyncHandler(async (req, res) => {
 
     // Doctor is already verified by verifyDoctorJWT
@@ -541,15 +537,91 @@ const getDoctorDashboard = asyncHandler(async (req, res) => {
         )
     );
 });
+// API to get doctor profile for Doctor Panel
+const doctorProfile = asyncHandler(async (req, res) => {
+
+    // Doctor is already verified by verifyDoctorJWT
+    const doctorId = req.doctor._id;
+
+    const profileData = await Doctor
+        .findById(doctorId)
+        .select("-password");
+
+    if (!profileData) {
+        return res.status(404).json(
+            new ApiResponse(
+                404,
+                null,
+                "Doctor profile not found"
+            )
+        );
+    }
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            profileData,
+            "Doctor profile fetched successfully"
+        )
+    );
+});
+// API to update doctor profile data from Doctor Panel
+
+const updateDoctorProfile = asyncHandler(async (req, res) => {
+
+    // Doctor is already verified by verifyDoctorJWT
+    const doctorId = req.doctor._id;
+
+    const {
+        fees,
+        address,
+        available
+    } = req.body;
+
+
+    const updatedDoctor = await doctorModel.findByIdAndUpdate(
+        doctorId,
+        {
+            fees,
+            address,
+            available
+        },
+        {
+            new: true
+        }
+    ).select("-password");
+
+
+    if (!updatedDoctor) {
+        return res.status(404).json(
+            new ApiResponse(
+                404,
+                null,
+                "Doctor profile not found"
+            )
+        );
+    }
+
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            updatedDoctor,
+            "Doctor profile updated successfully"
+        )
+    );
+});
 
 export { changeAvailability , 
         doctorList , 
         loginDoctor , 
         getCurrentDoctor , 
+        updateDoctorProfile ,
         logoutDoctor , 
         cancelDoctorAppointment , 
         completeAppointment , 
         getDoctorAppointments , 
         acceptDoctorAppointment , 
-        getDoctorDashboard 
+        getDoctorDashboard , 
+        doctorProfile
     };

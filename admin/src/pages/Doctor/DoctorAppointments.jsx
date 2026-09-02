@@ -5,7 +5,6 @@ import { AppContext } from "../../context/AppContext.jsx";
 const DoctorAppointments = () => {
 
     const {
-        dToken,
         appointments,
         getDoctorAppointments,
         cancelAppointment,
@@ -22,112 +21,76 @@ const DoctorAppointments = () => {
     // ==========================================
 
     useEffect(() => {
-
-        if (dToken) {
-
-            getDoctorAppointments();
-
-        }
-
-    }, [dToken]);
+        getDoctorAppointments();
+    }, []);
 
 
     // ==========================================
     // DATE FORMAT
     // ==========================================
 
-    const formatDate = (slotDate) => {
-
-        if (!slotDate) {
-            return "N/A";
-        }
-
-        const dateArray = slotDate.split("_");
-
-        if (dateArray.length !== 3) {
-            return slotDate;
-        }
-
-        const months = [
-            "Jan",
-            "Feb",
-            "Mar",
-            "Apr",
-            "May",
-            "Jun",
-            "Jul",
-            "Aug",
-            "Sep",
-            "Oct",
-            "Nov",
-            "Dec"
-        ];
-
-        return (
-            dateArray[0] +
-            " " +
-            months[Number(dateArray[1]) - 1] +
-            " " +
-            dateArray[2]
-        );
-
-    };
+const {formatDate} = useContext(AppContext)
 
 
     // ==========================================
     // PAYMENT STATUS
     // ==========================================
-const getPaymentStatus = (appointment) => {
 
-    // Online payment
-    if (appointment.paymentStatus === "paid") {
+    const getPaymentStatus = (appointment) => {
+
+        // Online payment
+        if (appointment.paymentStatus === "paid") {
+            return (
+                <span className="bg-green-50 text-green-600 border border-green-100 rounded-full px-3 py-1 text-xs font-medium">
+                    Paid
+                </span>
+            );
+        }
+
+
+        // Cash payment
+        if (
+            appointment.paymentStatus === "cash" ||
+            (
+                appointment.paymentStatus === "pending" &&
+                appointment.doctorConfirmed
+            )
+        ) {
+            return (
+                <span className="bg-blue-50 text-blue-600 border border-blue-100 rounded-full px-3 py-1 text-xs font-medium">
+                    Paid in Cash
+                </span>
+            );
+        }
+
+
+        // Refunded
+        if (appointment.paymentStatus === "refunded") {
+            return (
+                <span className="bg-purple-50 text-purple-600 border border-purple-100 rounded-full px-3 py-1 text-xs font-medium">
+                    Refunded
+                </span>
+            );
+        }
+
+
+        // Failed
+        if (appointment.paymentStatus === "failed") {
+            return (
+                <span className="bg-red-50 text-red-600 border border-red-100 rounded-full px-3 py-1 text-xs font-medium">
+                    Failed
+                </span>
+            );
+        }
+
+
+        // Pending
         return (
-            <span className="bg-green-50 text-green-600 border border-green-100 rounded-full px-3 py-1 text-xs font-medium">
-                Paid
+            <span className="bg-yellow-50 text-yellow-600 border border-yellow-100 rounded-full px-3 py-1 text-xs font-medium">
+                Pending
             </span>
         );
-    }
-
-    // Cash payment
-    if (
-        appointment.paymentStatus === "cash" ||
-        (
-            appointment.paymentStatus === "pending" &&
-            appointment.doctorConfirmed
-        )
-    ) {
-        return (
-            <span className="bg-blue-50 text-blue-600 border border-blue-100 rounded-full px-3 py-1 text-xs font-medium">
-                Paid in Cash
-            </span>
-        );
-    }
-
-    // Refunded
-    if (appointment.paymentStatus === "refunded") {
-        return (
-            <span className="bg-purple-50 text-purple-600 border border-purple-100 rounded-full px-3 py-1 text-xs font-medium">
-                Refunded
-            </span>
-        );
-    }
-
-    // Failed
-    if (appointment.paymentStatus === "failed") {
-        return (
-            <span className="bg-red-50 text-red-600 border border-red-100 rounded-full px-3 py-1 text-xs font-medium">
-                Failed
-            </span>
-        );
-    }
-
-    // Pending
-    return (
-        <span className="bg-yellow-50 text-yellow-600 border border-yellow-100 rounded-full px-3 py-1 text-xs font-medium">
-            Pending
-        </span>
-    );
-};
+    };
 
 
     // ==========================================
@@ -156,9 +119,6 @@ const getPaymentStatus = (appointment) => {
 
                 {/* ==========================================
                     TABLE HEADER
-
-                    # | Patient | Payment | Age |
-                    Date & Time | Fees | Action
                 ========================================== */}
 
                 <div className="hidden sm:grid grid-cols-[0.5fr_2.5fr_1.5fr_1fr_2fr_1fr_1.5fr] gap-4 py-3 px-6 border-b bg-slate-50 text-slate-600 font-medium">
@@ -194,10 +154,6 @@ const getPaymentStatus = (appointment) => {
                         >
 
 
-                            {/* ==========================================
-                                #
-                            ========================================== */}
-
                             <p className="max-sm:hidden">
                                 {index + 1}
                             </p>
@@ -227,11 +183,7 @@ const getPaymentStatus = (appointment) => {
                             ========================================== */}
 
                             <div>
-
-                                {getPaymentStatus(
-                                    item
-                                )}
-
+                                {getPaymentStatus(item)}
                             </div>
 
 

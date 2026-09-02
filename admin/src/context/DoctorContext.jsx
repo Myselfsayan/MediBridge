@@ -18,6 +18,8 @@ const DoctorContextProvider = (props) => {
     
     const [dashData, setDashData] = useState(false);
 
+    const [profileData, setProfileData] = useState(false);
+
 
 
     // CHECK DOCTOR AUTHENTICATION
@@ -69,7 +71,6 @@ const DoctorContextProvider = (props) => {
         }
 
     };
-
     // GET DOCTOR APPOINTMENTS
     const getDoctorAppointments = async () => {
 
@@ -116,7 +117,6 @@ const DoctorContextProvider = (props) => {
         }
 
     };
-
     // DOCTOR CANCEL / REJECT APPOINTMENT
     const cancelAppointment = async (appointmentId) => {
 
@@ -399,7 +399,27 @@ const DoctorContextProvider = (props) => {
             error.response?.data?.message || error.message
         );
     }
-};
+    };
+    const getProfileData = async () => {
+    try {
+
+        const { data } = await axios.get(
+            `${backendUrl}/api/v1/doctor/profile`,
+            {
+                withCredentials: true
+            }
+        );
+
+        if (data.success) {
+            setProfileData(data.data);
+            console.log(data.data);
+        }
+
+    } catch (error) {
+        console.log(error);
+        toast.error(error.message);
+    }
+    };
     // CHECK AUTH ON APP START
     useEffect(() => {
 
@@ -429,33 +449,18 @@ const DoctorContextProvider = (props) => {
     const value = {
 
         backendUrl,
-
-        doctorData,
-        setDoctorData,
-
-        isDoctorLoggedIn,
-        setIsDoctorLoggedIn,
-
+        doctorData,setDoctorData,
+        isDoctorLoggedIn,setIsDoctorLoggedIn,
         authLoading,
-
         checkDoctorAuth,
-
         logoutDoctor,
-
-        appointments,
-        setAppointments,
-
+        appointments,setAppointments,
         getDoctorAppointments,
-
         acceptAppointment,
-
         cancelAppointment,
-
         completeAppointment,
-        dashData,
-        getDashData,
-        setDashData
-
+        dashData,getDashData,setDashData,
+        profileData,getProfileData,setProfileData
     };
 
 

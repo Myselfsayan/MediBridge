@@ -28,6 +28,7 @@ import DoctorList from "./pages/Admin/DoctorList.jsx";
 
 import DoctorDashboard from "./pages/Doctor/DoctorDashboard.jsx";
 import DoctorAppointments from "./pages/Doctor/DoctorAppointments.jsx";
+import DoctorProfile from "./pages/Doctor/DoctorProfile.jsx";
 
 
 function App() {
@@ -143,6 +144,12 @@ function App() {
                             <Route
                                 path="/doctor-appointments"
                                 element={<DoctorAppointments />}
+                            />
+                            {/* DOCTOR PROFILE */}
+
+                            <Route
+                                path="/doctor-profile"
+                                element={<DoctorProfile />}
                             />
 
                         </Routes>
