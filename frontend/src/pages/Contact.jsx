@@ -54,7 +54,7 @@ function Contact() {
                             </div>
                             <div className="flex items-center gap-3">
                                 <Phone className="w-4 h-4 text-primary shrink-0" />
-                                <span>+1 (123) 456-7890 / +91 98765 43210</span>
+                                <span>+1 (123) 456-7890 / +91 123456780</span>
                             </div>
                             <div className="flex items-center gap-3">
                                 <Mail className="w-4 h-4 text-primary shrink-0" />
