@@ -1,7 +1,7 @@
 
 import { assets } from "../assets/assets";
 import { Link } from "react-router-dom";
-import { Mail, Phone, MapPin, Heart, Shield, Award } from "lucide-react";
+import { Mail, Phone, MapPin, Heart } from "lucide-react";
 
 function Footer() {
     return (
@@ -17,11 +17,6 @@ function Footer() {
                     <p className="text-slate-500 leading-relaxed text-sm">
                         MediBridge is dedicated to bridging the gap between patients and premier healthcare providers through seamless appointment scheduling.
                     </p>
-                    <div className="flex items-center gap-3 pt-2 text-xs text-slate-500">
-                        <span className="inline-flex items-center gap-1 bg-cyan-50 text-cyan-800 px-2.5 py-1 rounded-md border border-cyan-100 font-medium">
-                            <Shield className="w-3.5 h-3.5 text-primary" /> HIPAA Compliant
-                        </span>
-                    </div>
                 </div>
 
                 {/* Column 2: Quick Links */}

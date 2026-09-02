@@ -10,8 +10,7 @@ import {
     User, 
     Eye, 
     EyeOff, 
-    ArrowRight, 
-    ShieldCheck 
+    ArrowRight 
 } from "lucide-react";
 
 function Login() {
@@ -266,11 +265,6 @@ function Login() {
                                 </>
                             )}
                         </p>
-                    </div>
-
-                    <div className="pt-4 border-t border-slate-100 flex items-center justify-center gap-2 text-[11px] text-slate-400">
-                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>256-bit SSL encrypted & HIPAA secure</span>
                     </div>
                 </form>
             </div>
