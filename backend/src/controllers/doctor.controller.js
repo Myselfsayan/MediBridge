@@ -275,6 +275,30 @@ const cancelDoctorAppointment = asyncHandler(async (req, res) => {
     // it remains pending.
 
 
+    // ==========================================
+    // RELEASE DOCTOR SLOT
+    // ==========================================
+
+    const { docId, slotDate, slotTime } = appointment;
+    const doctorData = await Doctor.findById(docId);
+
+    if (doctorData) {
+        const slots_booked = doctorData.slots_booked;
+        const bookedSlots = slots_booked.get(slotDate);
+        if (bookedSlots) {
+            const updatedSlots = bookedSlots.filter(
+                (slot) => slot !== slotTime
+            );
+            slots_booked.set(slotDate, updatedSlots);
+        }
+
+        await Doctor.findByIdAndUpdate(
+            docId,
+            { slots_booked }
+        );
+    }
+
+
     await appointment.save();
 
 
