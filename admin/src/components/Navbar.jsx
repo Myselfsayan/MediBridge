@@ -3,131 +3,65 @@ import { assets } from "../assets/assets";
 import { AdminContext } from "../context/AdminContext";
 import { DoctorContext } from "../context/DoctorContext";
 import { useNavigate } from "react-router-dom";
+import { LogOut, ShieldCheck, Stethoscope, UserCircle } from "lucide-react";
 
 const Navbar = () => {
-
-    // ==========================================
-    // ADMIN CONTEXT
-    // ==========================================
-
-    const {
-        isAdminLoggedIn,
-        logoutAdmin
-    } = useContext(AdminContext);
-
-
-    // ==========================================
-    // DOCTOR CONTEXT
-    // ==========================================
-
-    const {
-        isDoctorLoggedIn,
-        logoutDoctor
-    } = useContext(DoctorContext);
-
-
+    const { isAdminLoggedIn, logoutAdmin } = useContext(AdminContext);
+    const { isDoctorLoggedIn, logoutDoctor } = useContext(DoctorContext);
     const navigate = useNavigate();
 
-
-    // ==========================================
-    // LOGOUT
-    // ==========================================
-
     const logout = async () => {
-
-        // ==========================================
-        // ADMIN LOGOUT
-        // ==========================================
-
         if (isAdminLoggedIn) {
-
             await logoutAdmin();
-
             navigate("/login");
-
             return;
         }
-
-
-        // ==========================================
-        // DOCTOR LOGOUT
-        // ==========================================
 
         if (isDoctorLoggedIn) {
-
             await logoutDoctor();
-
             navigate("/login");
-
             return;
         }
-
     };
 
-
-    // ==========================================
-    // ROLE
-    // ==========================================
-
-    const role = isAdminLoggedIn
-        ? "Admin"
-        : isDoctorLoggedIn
-            ? "Doctor"
-            : "";
-
+    const role = isAdminLoggedIn ? "Admin Portal" : isDoctorLoggedIn ? "Doctor Portal" : "";
 
     return (
-
-        <div className="flex justify-between items-center px-4 sm:px-10 py-3 bg-white border-b border-slate-200 shadow-sm">
-
-
-            {/* ==========================================
-                LOGO + ROLE
-            ========================================== */}
-
-            <div className="flex items-center gap-2 text-xs">
-
+        <header className="sticky top-0 z-40 flex justify-between items-center px-4 sm:px-8 py-3 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
+            {/* Logo & Portal Role Badge */}
+            <div className="flex items-center gap-3">
                 <img
-                    className="w-36 sm:w-40 cursor-pointer"
+                    className="h-8 sm:h-9 w-auto object-contain cursor-pointer"
                     src={assets.admin_logo}
-                    alt="MediBridge"
+                    alt="MediBridge Portal"
+                    onClick={() => navigate("/")}
                 />
 
-
-                {/* ROLE */}
-
                 {(isAdminLoggedIn || isDoctorLoggedIn) && (
-
-                    <p className="bg-cyan-50 text-primary border border-primary/20 rounded-lg px-3 py-1 text-xs font-medium">
-
-                        {role}
-
-                    </p>
-
+                    <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-2xs border bg-cyan-50 text-cyan-800 border-cyan-200">
+                        {isAdminLoggedIn ? (
+                            <ShieldCheck className="w-3.5 h-3.5 text-primary" />
+                        ) : (
+                            <Stethoscope className="w-3.5 h-3.5 text-teal-600" />
+                        )}
+                        <span>{role}</span>
+                    </div>
                 )}
-
             </div>
 
-
-            {/* ==========================================
-                LOGOUT BUTTON
-            ========================================== */}
-
-            {(isAdminLoggedIn || isDoctorLoggedIn) && (
-
-                <button
-                    className="bg-primary hover:bg-cyan-700 text-white text-sm px-6 py-2.5 rounded-lg cursor-pointer transition font-medium"
-                    onClick={logout}
-                >
-
-                    Logout
-
-                </button>
-
-            )}
-
-        </div>
-
+            {/* Actions & Logout */}
+            <div className="flex items-center gap-3">
+                {(isAdminLoggedIn || isDoctorLoggedIn) && (
+                    <button
+                        onClick={logout}
+                        className="inline-flex items-center gap-2 bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-600 border border-slate-200 hover:border-rose-200 text-xs sm:text-sm px-4 py-2 rounded-xl transition-all font-semibold cursor-pointer"
+                    >
+                        <LogOut className="w-4 h-4" />
+                        <span className="hidden sm:inline">Sign Out</span>
+                    </button>
+                )}
+            </div>
+        </header>
     );
 };
 

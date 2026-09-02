@@ -8,12 +8,11 @@ import { AppContext } from '../context/AppContext.jsx'
 function Home() {
     const { isLoggedIn } = useContext(AppContext);
     return (
-        <div>
-        <Header/>
-        <SpecialityMenu/>
-        <TopDoctors/>
-        {!isLoggedIn && <Banner />}
-
+        <div className="space-y-8 sm:space-y-12">
+            <Header />
+            <SpecialityMenu />
+            <TopDoctors />
+            {!isLoggedIn && <Banner />}
         </div>
     )
 }

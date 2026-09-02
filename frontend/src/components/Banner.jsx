@@ -1,37 +1,54 @@
 
-import { useNavigate } from "react-router-dom"
-import { assets } from "../assets/assets.js"
+import { useNavigate } from "react-router-dom";
+import { assets } from "../assets/assets.js";
+import { ArrowRight, Sparkles, UserCheck } from "lucide-react";
 
 export default function Banner() {
-    const navigate = useNavigate()
+    const navigate = useNavigate();
     return (
-        <div className='flex bg-gradient-to-r from-primary to-cyan-700 rounded-lg px-6 sm:px-10 md:px-14 lg:px-12 my-20 md:mx-10 shadow-sm'>
+        <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-cyan-700 via-teal-600 to-cyan-800 my-16 shadow-xl">
+            {/* Background elements */}
+            <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-cyan-400/20 rounded-full blur-2xl pointer-events-none" />
 
-            {/* -------- Left Side -------- */}
+            <div className="relative flex flex-col md:flex-row items-center justify-between px-6 sm:px-10 md:px-14 lg:px-16 py-10 md:py-0">
+                {/* Left Side */}
+                <div className="flex-1 md:py-14 z-10 text-center md:text-left">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-cyan-100 text-xs font-semibold mb-4">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                        <span>Instant Online Booking</span>
+                    </div>
 
-            <div className='flex-1 py-8 sm:py-10 md:py-16 lg:py-24 lg:pl-5'>
+                    <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white leading-tight">
+                        Ready to Consult with <br />
+                        <span className="text-cyan-200">100+ Trusted Doctors?</span>
+                    </h2>
 
-                <div className='text-xl sm:text-2xl md:text-3xl lg:text-5xl font-semibold text-white'>
-                <p>Book Appointment</p>
-                <p className='mt-4'>With 100+ Trusted Doctors</p>
+                    <p className="mt-3 text-sm text-cyan-50/90 max-w-md mx-auto md:mx-0">
+                        Create your free MediBridge account today and get access to seamless appointment booking anytime, anywhere.
+                    </p>
+
+                    <button 
+                        onClick={() => {
+                            navigate("/login"); 
+                            window.scrollTo({ top: 0, behavior: "smooth" });
+                        }} 
+                        className="mt-6 inline-flex items-center gap-2.5 bg-white text-cyan-800 font-bold px-8 py-3.5 rounded-full shadow-lg shadow-black/10 hover:shadow-xl hover:bg-cyan-50 hover:scale-105 active:scale-98 transition-all duration-300 group text-sm sm:text-base cursor-pointer"
+                    >
+                        <span>Create Account</span>
+                        <ArrowRight className="w-4 h-4 text-primary transition-transform group-hover:translate-x-1" />
+                    </button>
                 </div>
 
-                <button onClick={()=>{navigate("/login"); scrollTo(0,0)}} className="bg-white text-sm sm:text-base text-primary font-medium px-8 py-3 rounded-lg mt-6 shadow-md hover:shadow-lg hover:scale-105 transition-all cursor-pointer">Create account</button>
-
+                {/* Right Side */}
+                <div className="hidden md:flex md:w-5/12 lg:w-4/12 justify-end self-end pt-6">
+                    <img
+                        className="w-full max-w-sm h-auto object-contain drop-shadow-xl"
+                        src={assets.appointment_img}
+                        alt="Book Doctor"
+                    />
+                </div>
             </div>
-
-            {/* -------- Right Side -------- */}
-
-            <div className='hidden md:block md:w-1/2 lg:w-[370px] relative'>
-
-                <img
-                className='w-full absolute bottom-0 right-0 max-w-md'
-                src={assets.appointment_img}
-                alt=""
-                />
-
-            </div>
-
-        </div>
-    )
+        </section>
+    );
 }
