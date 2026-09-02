@@ -233,152 +233,84 @@ const Navbar = () => {
                         </button>
                     )}
 
-                    {/* Mobile Menu Button */}
+                    {/* Mobile Menu Button (Hamburger) */}
                     <button
-                        onClick={() => setShowMenu(true)}
-                        className="md:hidden p-2 rounded-xl text-slate-700 hover:bg-slate-100 border border-slate-200 transition-colors focus:outline-none"
-                        aria-label="Open menu"
+                        type="button"
+                        onClick={() => setShowMenu(prev => !prev)}
+                        className="md:hidden p-2 rounded-xl text-slate-700 hover:bg-slate-100 border border-slate-200 transition-colors focus:outline-none cursor-pointer"
+                        aria-label="Toggle navigation menu"
                     >
-                        <Menu className="w-6 h-6" />
+                        {showMenu ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                     </button>
                 </div>
             </div>
 
-            {/* Mobile Navigation Drawer */}
+            {/* Mobile Dropdown Navigation Menu */}
             {showMenu && (
-                <div className="fixed inset-0 z-50 md:hidden flex justify-end">
-                    {/* Backdrop */}
-                    <div 
-                        className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity animate-in fade-in"
+                <div className="md:hidden border-t border-slate-200/80 bg-white/98 backdrop-blur-md shadow-2xl animate-in slide-in-from-top duration-200 -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 space-y-1.5">
+                    {/* 1. Home */}
+                    <NavLink
+                        to="/"
                         onClick={() => setShowMenu(false)}
-                    />
+                        className={({ isActive }) =>
+                            `flex items-center gap-3 px-4 py-3 rounded-xl text-base font-semibold transition-colors ${
+                                isActive
+                                    ? "bg-primary text-white shadow-sm"
+                                    : "text-slate-700 hover:bg-slate-100"
+                            }`
+                        }
+                    >
+                        <Home className="w-5 h-5 shrink-0" />
+                        <span>Home</span>
+                    </NavLink>
 
-                    {/* Drawer Content */}
-                    <div className="relative w-full max-w-xs sm:max-w-sm bg-white h-full shadow-2xl flex flex-col z-10 animate-in slide-in-from-right duration-300">
-                        {/* Drawer Header */}
-                        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
-                            <img
-                                className="h-8 w-auto object-contain"
-                                src={assets.logo}
-                                alt="MediBridge"
-                            />
-                            <button
-                                onClick={() => setShowMenu(false)}
-                                className="p-2 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
-                                aria-label="Close menu"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
+                    {/* 2. Doctors */}
+                    <NavLink
+                        to="/all-doctors"
+                        onClick={() => setShowMenu(false)}
+                        className={({ isActive }) =>
+                            `flex items-center gap-3 px-4 py-3 rounded-xl text-base font-semibold transition-colors ${
+                                isActive
+                                    ? "bg-primary text-white shadow-sm"
+                                    : "text-slate-700 hover:bg-slate-100"
+                            }`
+                        }
+                    >
+                        <Stethoscope className="w-5 h-5 shrink-0" />
+                        <span>Doctors</span>
+                    </NavLink>
 
-                        {/* User summary in mobile drawer (if logged in) */}
-                        {isLoggedIn && (
-                            <div className="px-6 py-4 bg-slate-50/80 border-b border-slate-100 flex items-center gap-3">
-                                <img
-                                    className="w-12 h-12 rounded-full object-cover ring-2 ring-primary/40"
-                                    src={userData?.image || assets.profile_pic}
-                                    alt={userData?.name || "User"}
-                                />
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-bold text-slate-900 truncate">
-                                        {userData?.name || "Patient"}
-                                    </p>
-                                    <p className="text-xs text-slate-500 truncate">
-                                        {userData?.email || ""}
-                                    </p>
-                                </div>
-                            </div>
-                        )}
+                    {/* 3. About Us */}
+                    <NavLink
+                        to="/about"
+                        onClick={() => setShowMenu(false)}
+                        className={({ isActive }) =>
+                            `flex items-center gap-3 px-4 py-3 rounded-xl text-base font-semibold transition-colors ${
+                                isActive
+                                    ? "bg-primary text-white shadow-sm"
+                                    : "text-slate-700 hover:bg-slate-100"
+                            }`
+                        }
+                    >
+                        <Info className="w-5 h-5 shrink-0" />
+                        <span>About Us</span>
+                    </NavLink>
 
-                        {/* Navigation Links */}
-                        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-1.5">
-                            <p className="px-3 text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                                Menu
-                            </p>
-                            {navLinks.map((item) => {
-                                const Icon = item.icon;
-                                return (
-                                    <NavLink
-                                        key={item.path}
-                                        to={item.path}
-                                        onClick={() => setShowMenu(false)}
-                                        className={({ isActive }) =>
-                                            `flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-colors ${
-                                                isActive
-                                                    ? "bg-primary text-white shadow-sm font-semibold"
-                                                    : "text-slate-700 hover:bg-slate-100"
-                                            }`
-                                        }
-                                    >
-                                        <Icon className="w-5 h-5" />
-                                        {item.label}
-                                    </NavLink>
-                                );
-                            })}
-
-                            {/* Patient Actions in mobile menu if logged in */}
-                            {isLoggedIn && (
-                                <>
-                                    <p className="px-3 text-xs font-semibold uppercase tracking-wider text-slate-400 mt-6 mb-2">
-                                        Account
-                                    </p>
-                                    <NavLink
-                                        to="/my-profile"
-                                        onClick={() => setShowMenu(false)}
-                                        className={({ isActive }) =>
-                                            `flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-colors ${
-                                                isActive
-                                                    ? "bg-primary text-white font-semibold"
-                                                    : "text-slate-700 hover:bg-slate-100"
-                                            }`
-                                        }
-                                    >
-                                        <User className="w-5 h-5" />
-                                        My Profile
-                                    </NavLink>
-                                    <NavLink
-                                        to="/my-appointments"
-                                        onClick={() => setShowMenu(false)}
-                                        className={({ isActive }) =>
-                                            `flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-colors ${
-                                                isActive
-                                                    ? "bg-primary text-white font-semibold"
-                                                    : "text-slate-700 hover:bg-slate-100"
-                                            }`
-                                        }
-                                    >
-                                        <Calendar className="w-5 h-5" />
-                                        My Appointments
-                                    </NavLink>
-                                </>
-                            )}
-                        </div>
-
-                        {/* Drawer Footer / CTA */}
-                        <div className="p-4 border-t border-slate-100 bg-slate-50/50">
-                            {isLoggedIn ? (
-                                <button
-                                    onClick={handleLogout}
-                                    disabled={loggingOut}
-                                    className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors disabled:opacity-50"
-                                >
-                                    <LogOut className="w-4 h-4" />
-                                    {loggingOut ? "Signing out..." : "Sign Out"}
-                                </button>
-                            ) : (
-                                <button
-                                    onClick={() => {
-                                        setShowMenu(false);
-                                        navigate("/login");
-                                    }}
-                                    className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-primary to-cyan-700 shadow-md shadow-primary/20 hover:shadow-lg transition-all"
-                                >
-                                    <UserPlus className="w-4 h-4" />
-                                    Create Account
-                                </button>
-                            )}
-                        </div>
-                    </div>
+                    {/* 4. Contact Us */}
+                    <NavLink
+                        to="/contact"
+                        onClick={() => setShowMenu(false)}
+                        className={({ isActive }) =>
+                            `flex items-center gap-3 px-4 py-3 rounded-xl text-base font-semibold transition-colors ${
+                                isActive
+                                    ? "bg-primary text-white shadow-sm"
+                                    : "text-slate-700 hover:bg-slate-100"
+                            }`
+                        }
+                    >
+                        <PhoneCall className="w-5 h-5 shrink-0" />
+                        <span>Contact Us</span>
+                    </NavLink>
                 </div>
             )}
         </header>
