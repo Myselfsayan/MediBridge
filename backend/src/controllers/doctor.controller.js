@@ -573,15 +573,17 @@ const updateDoctorProfile = asyncHandler(async (req, res) => {
     const doctorId = req.doctor._id;
 
     const {
+        about,
         fees,
         address,
         available
     } = req.body;
 
 
-    const updatedDoctor = await doctorModel.findByIdAndUpdate(
+    const updatedDoctor = await Doctor.findByIdAndUpdate(
         doctorId,
         {
+            about,
             fees,
             address,
             available

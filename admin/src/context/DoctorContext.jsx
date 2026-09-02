@@ -20,6 +20,8 @@ const DoctorContextProvider = (props) => {
 
     const [profileData, setProfileData] = useState(false);
 
+    
+
 
 
     // CHECK DOCTOR AUTHENTICATION
@@ -420,6 +422,54 @@ const DoctorContextProvider = (props) => {
         toast.error(error.message);
     }
     };
+    const updateProfile = async () => {
+
+    try {
+
+        // ONLY THESE 4 FIELDS ARE UPDATED
+
+        const updateData = {
+            about: profileData.about,
+            address: profileData.address,
+            fees: profileData.fees,
+            available: profileData.available
+        };
+
+
+        const { data } = await axios.put(
+            `${backendUrl}/api/v1/doctor/update-profile`,
+            updateData,
+            {
+                withCredentials: true
+            }
+        );
+
+
+        if (data.success) {
+
+            toast.success(data.message);
+
+            return true;
+
+        } else {
+
+            toast.error(data.message);
+
+            return false;
+        }
+
+    } catch (error) {
+
+        console.log(error);
+
+        toast.error(
+            error.response?.data?.message ||
+            error.message
+        );
+
+        return false;
+    }
+};
     // CHECK AUTH ON APP START
     useEffect(() => {
 
@@ -460,7 +510,8 @@ const DoctorContextProvider = (props) => {
         cancelAppointment,
         completeAppointment,
         dashData,getDashData,setDashData,
-        profileData,getProfileData,setProfileData
+        profileData,getProfileData,setProfileData,
+        updateProfile
     };
 
 

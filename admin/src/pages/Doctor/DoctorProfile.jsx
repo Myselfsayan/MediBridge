@@ -8,12 +8,10 @@ const DoctorProfile = () => {
         profileData,
         setProfileData,
         getProfileData,
-        updateDoctorProfile
+        updateProfile
     } = useContext(DoctorContext);
 
-    const {
-        currency
-    } = useContext(AppContext);
+    const { currency } = useContext(AppContext);
 
     const [isEdit, setIsEdit] = useState(false);
 
@@ -29,19 +27,16 @@ const DoctorProfile = () => {
 
     // ==========================================
     // SAVE PROFILE
+    // ONLY 4 FIELDS WILL BE UPDATED
     // ==========================================
 
     const handleSave = async () => {
 
-        const success = await updateDoctorProfile(
-            profileData.fees,
-            profileData.address,
-            profileData.available
-        );
+        const success = await updateProfile();
 
         if (success) {
             setIsEdit(false);
-            getProfileData();
+            await getProfileData();
         }
     };
 
@@ -60,39 +55,61 @@ const DoctorProfile = () => {
 
 
     return (
-        <div className="max-w-5xl m-5">
+        <div className="m-5 max-w-5xl">
 
             {/* ==========================================
-                DOCTOR BASIC INFORMATION
+                DOCTOR IMAGE + BASIC INFORMATION
             ========================================== */}
 
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
 
+                {/* Doctor Image - NOT EDITABLE */}
+
                 <img
-                    className="w-40 h-40 object-cover rounded-lg bg-primary"
+                    className="w-40 h-40 object-cover rounded-lg"
                     src={profileData.image}
-                    alt=""
+                    alt={profileData.name || "Doctor"}
                 />
+
+
+                {/* ==========================================
+                    DOCTOR DETAILS
+                ========================================== */}
 
                 <div className="flex-1">
 
-                    <h1 className="flex items-center gap-2 text-2xl font-medium text-gray-700">
+                    {/* ==========================================
+                        NAME - NOT EDITABLE
+                    ========================================== */}
+
+                    <p className="text-2xl font-medium text-gray-700">
                         {profileData.name}
-                    </h1>
+                    </p>
+
+
+                    {/* ==========================================
+                        DEGREE + SPECIALITY + EXPERIENCE
+                        NOT EDITABLE
+                    ========================================== */}
 
                     <div className="flex items-center gap-2 mt-1 text-gray-600">
+
                         <p>
                             {profileData.degree} - {profileData.speciality}
                         </p>
 
-                        <button className="py-0.5 px-2 border text-xs rounded-full">
-                            {profileData.experience}
+                        <button
+                            type="button"
+                            className="py-0.5 px-2 border text-xs rounded-full"
+                        >
+                            {profileData.experience}{profileData.experience === 1 ? " year" : " years"}
                         </button>
+
                     </div>
 
 
                     {/* ==========================================
-                        ABOUT
+                        ABOUT - EDITABLE
                     ========================================== */}
 
                     <div className="mt-4">
@@ -101,51 +118,136 @@ const DoctorProfile = () => {
                             About
                         </p>
 
-                        <p className="text-sm text-gray-600 max-w-[700px] mt-1">
-                            {profileData.about}
-                        </p>
+                        {isEdit ? (
+
+                            <textarea
+                                value={profileData.about || ""}
+                                onChange={(e) =>
+                                    setProfileData(prev => ({
+                                        ...prev,
+                                        about: e.target.value
+                                    }))
+                                }
+                                className="w-full max-w-[700px] border rounded px-2 py-1 text-sm mt-1"
+                                rows={4}
+                            />
+
+                        ) : (
+
+                            <p className="text-sm text-gray-600 max-w-[700px] mt-1">
+                                {profileData.about}
+                            </p>
+
+                        )}
 
                     </div>
 
 
                     {/* ==========================================
-                        APPOINTMENT FEE
+                        APPOINTMENT FEE - EDITABLE
                     ========================================== */}
 
                     <p className="text-gray-600 font-medium mt-4">
 
                         Appointment fee:
 
-                        <span className="text-gray-800 ml-1">
-                            {currency} {profileData.fees}
-                        </span>
+                        {isEdit ? (
+
+                            <input
+                                type="number"
+                                value={profileData.fees ?? ""}
+                                onChange={(e) =>
+                                    setProfileData(prev => ({
+                                        ...prev,
+                                        fees: e.target.value
+                                    }))
+                                }
+                                className="border rounded px-2 py-1 ml-1 w-24 text-gray-800"
+                            />
+
+                        ) : (
+
+                            <span className="text-gray-800 ml-1">
+                                {currency} {profileData.fees}
+                            </span>
+
+                        )}
 
                     </p>
 
 
                     {/* ==========================================
-                        ADDRESS
+                        ADDRESS - EDITABLE
                     ========================================== */}
 
                     <div className="flex gap-2 py-2">
 
-                        <p>Address:</p>
-
-                        <p className="text-sm">
-
-                            {profileData.address?.line1}
-
-                            <br />
-
-                            {profileData.address?.line2}
-
+                        <p>
+                            Address:
                         </p>
+
+                        {isEdit ? (
+
+                            <div className="flex flex-col gap-2">
+
+                                {/* Address Line 1 */}
+
+                                <input
+                                    type="text"
+                                    value={profileData.address?.line1 || ""}
+                                    onChange={(e) =>
+                                        setProfileData(prev => ({
+                                            ...prev,
+                                            address: {
+                                                ...prev.address,
+                                                line1: e.target.value
+                                            }
+                                        }))
+                                    }
+                                    className="border rounded px-2 py-1 text-sm"
+                                    placeholder="Address line 1"
+                                />
+
+
+                                {/* Address Line 2 */}
+
+                                <input
+                                    type="text"
+                                    value={profileData.address?.line2 || ""}
+                                    onChange={(e) =>
+                                        setProfileData(prev => ({
+                                            ...prev,
+                                            address: {
+                                                ...prev.address,
+                                                line2: e.target.value
+                                            }
+                                        }))
+                                    }
+                                    className="border rounded px-2 py-1 text-sm"
+                                    placeholder="Address line 2"
+                                />
+
+                            </div>
+
+                        ) : (
+
+                            <p className="text-sm">
+
+                                {profileData.address?.line1}
+
+                                <br />
+
+                                {profileData.address?.line2}
+
+                            </p>
+
+                        )}
 
                     </div>
 
 
                     {/* ==========================================
-                        AVAILABLE
+                        AVAILABLE - EDITABLE
                     ========================================== */}
 
                     <div className="flex gap-1 pt-2">
@@ -155,10 +257,10 @@ const DoctorProfile = () => {
                             checked={profileData.available || false}
                             disabled={!isEdit}
                             onChange={(e) =>
-                                setProfileData({
-                                    ...profileData,
+                                setProfileData(prev => ({
+                                    ...prev,
                                     available: e.target.checked
-                                })
+                                }))
                             }
                         />
 
@@ -170,10 +272,10 @@ const DoctorProfile = () => {
 
 
                     {/* ==========================================
-                        EDIT / SAVE
+                        EDIT / SAVE BUTTON
                     ========================================== */}
 
-                    <div className="mt-4">
+                    <div className="mt-5">
 
                         {isEdit ? (
 
