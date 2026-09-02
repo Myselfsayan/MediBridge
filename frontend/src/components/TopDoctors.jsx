@@ -53,7 +53,7 @@ function TopDoctors() {
                             {/* Experience Pill */}
                             {item.experience && (
                                 <div className="absolute top-3 right-3 bg-slate-900/70 backdrop-blur-md text-white px-2 py-0.5 rounded-md text-[11px] font-medium">
-                                    {item.experience}
+                                    {item.experience}{item.experience === 1 ? ' yr' : ' yrs'} exp
                                 </div>
                             )}
                         </div>
