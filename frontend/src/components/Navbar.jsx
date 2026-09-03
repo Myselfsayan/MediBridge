@@ -224,13 +224,25 @@ const Navbar = () => {
                             )}
                         </div>
                     ) : (
-                        <button
-                            onClick={() => navigate("/login")}
-                            className="hidden md:inline-flex items-center gap-2 bg-gradient-to-r from-primary to-cyan-700 hover:from-cyan-700 hover:to-primary text-white text-sm font-semibold px-6 py-2.5 rounded-full shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all active:scale-95"
-                        >
-                            <UserPlus className="w-4 h-4" />
-                            Create Account
-                        </button>
+                        <>
+                            {/* Mobile Create Account Button */}
+                            <button
+                                onClick={() => navigate("/login")}
+                                className="md:hidden inline-flex items-center gap-1.5 bg-gradient-to-r from-primary to-cyan-700 hover:from-cyan-700 hover:to-primary text-white text-xs font-semibold px-3.5 py-2 rounded-full shadow-sm shadow-primary/20 active:scale-95 transition-all"
+                            >
+                                <UserPlus className="w-3.5 h-3.5" />
+                                <span>Create Account</span>
+                            </button>
+
+                            {/* Desktop Create Account Button */}
+                            <button
+                                onClick={() => navigate("/login")}
+                                className="hidden md:inline-flex items-center gap-2 bg-gradient-to-r from-primary to-cyan-700 hover:from-cyan-700 hover:to-primary text-white text-sm font-semibold px-6 py-2.5 rounded-full shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all active:scale-95"
+                            >
+                                <UserPlus className="w-4 h-4" />
+                                Create Account
+                            </button>
+                        </>
                     )}
 
                     {/* Mobile Menu Button (Hamburger) */}
