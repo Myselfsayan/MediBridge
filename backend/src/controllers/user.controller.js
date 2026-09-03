@@ -380,18 +380,19 @@ const updateProfile = asyncHandler(async (req, res) => {
         }
     }
 
-    let oldImage = currentUser.image;
-
     if (req.file) {
-        const uploadedImage = await uploadOnCloudinary(
-            req.file.path
-        );
+        const uploadedImage = await uploadOnCloudinary(req.file.path);
 
         if (!uploadedImage) {
-            throw new ApiError(
-                500,
-                "Image upload failed"
-            );
+            throw new ApiError(500, "Image upload failed");
+        }
+
+        // Clean up old Cloudinary image if it exists and is a valid Cloudinary URL
+        if (currentUser.image && currentUser.image.includes("cloudinary.com")) {
+            const publicId = getPublicIdFromUrl(currentUser.image);
+            if (publicId) {
+                await deleteFromCloudinary(publicId);
+            }
         }
 
         updateData.image = uploadedImage.secure_url;
