@@ -222,10 +222,12 @@ const paymentRefunded = asyncHandler(async (req, res) => {
     // REMOVE CANCELLED SLOT
     // ==========================================
 
+    const normalizeSlot = (t) => (t ? String(t).replace(/[\u202F\u00A0]/g, " ").trim().toUpperCase() : "");
+    const cleanSlotTime = appointment.slotTime ? String(appointment.slotTime).replace(/[\u202F\u00A0]/g, " ").trim() : "";
     const updatedSlots =
         bookedSlots.filter(
             (slot) =>
-                slot !== appointment.slotTime
+                normalizeSlot(slot) !== normalizeSlot(cleanSlotTime)
         );
 
 

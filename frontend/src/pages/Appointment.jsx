@@ -36,6 +36,27 @@ function Appointment() {
     const daysOfWeek = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
     const navigate = useNavigate();
 
+    // Deterministic 12-hour slot time formatter: "hh:mm AM/PM" (e.g. "10:00 AM", "01:30 PM")
+    const formatSlotTime = (date) => {
+        let hours = date.getHours();
+        const minutes = date.getMinutes();
+        const period = hours >= 12 ? "PM" : "AM";
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+        const formattedHours = hours < 10 ? `0${hours}` : `${hours}`;
+        const formattedMinutes = minutes < 10 ? `0${minutes}` : `${minutes}`;
+        return `${formattedHours}:${formattedMinutes} ${period}`;
+    };
+
+    // Normalize time strings across browsers (strips narrow/non-breaking spaces, trims, standardizes case)
+    const normalizeSlotTime = (timeStr) => {
+        if (!timeStr) return "";
+        return timeStr
+            .replace(/[\u202F\u00A0]/g, " ")
+            .trim()
+            .toUpperCase();
+    };
+
     const getAvailableSlots = async () => {
         setDocSlots([]);
 
@@ -43,6 +64,9 @@ function Appointment() {
         let allSlots = [];
 
         for (let i = 0; i < 7; i++) {
+            let dayDate = new Date(today);
+            dayDate.setDate(today.getDate() + i);
+
             let currentDate = new Date(today);
             currentDate.setDate(today.getDate() + i);
 
@@ -70,32 +94,32 @@ function Appointment() {
 
             let timeSlots = [];
 
+            // Create date format: DD_MM_YYYY
+            const day = dayDate.getDate();
+            const month = dayDate.getMonth() + 1;
+            const year = dayDate.getFullYear();
+            const slotDate = `${day}_${month}_${year}`;
+
+            // Get already booked slots for this date and normalize them
+            const rawBookedSlots = docInfo?.slots_booked?.[slotDate] || [];
+            const normalizedBookedSlots = Array.isArray(rawBookedSlots)
+                ? rawBookedSlots.map(normalizeSlotTime)
+                : [];
+
             while (currentDate < endTime) {
-                const formattedTime = currentDate.toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit"
-                });
-
-                // Create date format: DD_MM_YYYY
-                const day = currentDate.getDate();
-                const month = currentDate.getMonth() + 1;
-                const year = currentDate.getFullYear();
-
-                const slotDate = `${day}_${month}_${year}`;
-
-                // Get already booked slots for this date
-                const bookedSlots =
-                    docInfo?.slots_booked?.[slotDate] || [];
+                const formattedTime = formatSlotTime(currentDate);
 
                 // Check whether this particular time is already booked
-                const isSlotBooked =
-                    bookedSlots.includes(formattedTime);
+                const isSlotBooked = normalizedBookedSlots.includes(
+                    normalizeSlotTime(formattedTime)
+                );
 
                 // Only show available slots
                 if (!isSlotBooked) {
                     timeSlots.push({
                         datetime: new Date(currentDate),
-                        time: formattedTime
+                        time: formattedTime,
+                        slotDate: slotDate
                     });
                 }
 
@@ -104,6 +128,9 @@ function Appointment() {
                     currentDate.getMinutes() + 30
                 );
             }
+
+            timeSlots.dayDate = dayDate;
+            timeSlots.slotDate = slotDate;
 
             allSlots.push(timeSlots);
         }
@@ -122,20 +149,19 @@ function Appointment() {
             return;
         }
 
-        if (!docSlots[slotIndex] || !docSlots[slotIndex][0]) {
+        const currentDaySlots = docSlots[slotIndex];
+        const slotDate = currentDaySlots?.slotDate || 
+            (currentDaySlots?.[0]?.datetime ? 
+                `${currentDaySlots[0].datetime.getDate()}_${currentDaySlots[0].datetime.getMonth() + 1}_${currentDaySlots[0].datetime.getFullYear()}` 
+                : null);
+
+        if (!slotDate) {
             toast.warn("Please select a date");
             return;
         }
 
         try {
             setIsBooking(true);
-            const selectedDate = docSlots[slotIndex][0].datetime;
-
-            const day = selectedDate.getDate();
-            const month = selectedDate.getMonth() + 1;
-            const year = selectedDate.getFullYear();
-
-            const slotDate = `${day}_${month}_${year}`;
 
             const { data } = await axios.post(
                 `${backendUrl}/api/v1/user/book-appointment`,
@@ -156,9 +182,14 @@ function Appointment() {
                 // Remove the booked slot immediately from frontend
                 setDocSlots((prevSlots) => {
                     const updatedSlots = [...prevSlots];
-                    updatedSlots[slotIndex] = updatedSlots[slotIndex].filter(
-                        (slot) => slot.time !== slotTime
-                    );
+                    if (updatedSlots[slotIndex]) {
+                        const filtered = updatedSlots[slotIndex].filter(
+                            (slot) => normalizeSlotTime(slot.time) !== normalizeSlotTime(slotTime)
+                        );
+                        filtered.dayDate = updatedSlots[slotIndex].dayDate;
+                        filtered.slotDate = updatedSlots[slotIndex].slotDate;
+                        updatedSlots[slotIndex] = filtered;
+                    }
                     return updatedSlots;
                 });
 
@@ -324,7 +355,7 @@ function Appointment() {
                     <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-2">
                         {docSlots.length > 0 && docSlots.map((item, index) => {
                             const isSelected = slotIndex === index;
-                            const slotDateObj = item[0]?.datetime;
+                            const slotDateObj = item.dayDate || item[0]?.datetime;
 
                             return (
                                 <button

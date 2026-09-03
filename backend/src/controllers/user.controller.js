@@ -245,15 +245,19 @@ const bookAppointment = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Doctor not available");
     }
 
+    // Normalize slot time string (strips narrow and non-breaking spaces, trims)
+    const normalizeSlot = (t) => (t ? String(t).replace(/[\u202F\u00A0]/g, " ").trim().toUpperCase() : "");
+    const cleanSlotTime = slotTime ? String(slotTime).replace(/[\u202F\u00A0]/g, " ").trim() : "";
+
     // Check slot availability
     const slots_booked = docData.slots_booked;
     const bookedSlots = slots_booked.get(slotDate) || [];
 
-    if (bookedSlots.includes(slotTime)) {
+    if (bookedSlots.some(slot => normalizeSlot(slot) === normalizeSlot(cleanSlotTime))) {
         throw new ApiError(400, "Slot not available");
     }
 
-    bookedSlots.push(slotTime);
+    bookedSlots.push(cleanSlotTime);
     slots_booked.set(slotDate, bookedSlots);
 
     // Get user data
@@ -470,7 +474,9 @@ const cancelAppointment = asyncHandler(async (req, res) => {
     const slots_booked = doctorData.slots_booked;
     const bookedSlots = slots_booked.get(slotDate);
     if (bookedSlots) {
-        const updatedSlots = bookedSlots.filter(e => e !== slotTime);
+        const normalizeSlot = (t) => (t ? String(t).replace(/[\u202F\u00A0]/g, " ").trim().toUpperCase() : "");
+        const cleanSlotTime = slotTime ? String(slotTime).replace(/[\u202F\u00A0]/g, " ").trim() : "";
+        const updatedSlots = bookedSlots.filter(e => normalizeSlot(e) !== normalizeSlot(cleanSlotTime));
         slots_booked.set(slotDate, updatedSlots);
     }
 

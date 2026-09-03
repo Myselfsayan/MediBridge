@@ -289,8 +289,10 @@ const cancelDoctorAppointment = asyncHandler(async (req, res) => {
         const slots_booked = doctorData.slots_booked;
         const bookedSlots = slots_booked.get(slotDate);
         if (bookedSlots) {
+            const normalizeSlot = (t) => (t ? String(t).replace(/[\u202F\u00A0]/g, " ").trim().toUpperCase() : "");
+            const cleanSlotTime = slotTime ? String(slotTime).replace(/[\u202F\u00A0]/g, " ").trim() : "";
             const updatedSlots = bookedSlots.filter(
-                (slot) => slot !== slotTime
+                (slot) => normalizeSlot(slot) !== normalizeSlot(cleanSlotTime)
             );
             slots_booked.set(slotDate, updatedSlots);
         }
