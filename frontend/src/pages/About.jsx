@@ -3,9 +3,6 @@ import {
     ShieldCheck, 
     Zap, 
     HeartHandshake, 
-    Sparkles, 
-    CheckCircle2, 
-    Award, 
     Target,
     Activity
 } from 'lucide-react';
