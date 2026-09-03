@@ -262,15 +262,66 @@ const allDoctors = asyncHandler(async (req, res) => {
 // ==========================================
 
 const appointmentsAdmin = asyncHandler(async (req, res) => {
+    const appointments = await appointmentModel
+        .find({})
+        .sort({ createdAt: -1 })
+        .lean();
 
-    const appointments =
-        await appointmentModel.find({});
+    // GET CURRENT USER AND DOCTOR PROFILES FOR EACH APPOINTMENT
+    const updatedAppointments = await Promise.all(
+        appointments.map(async (appointment) => {
+            // 1. Fetch latest user data
+            if (appointment.userId) {
+                const currentUser = await User
+                    .findById(appointment.userId)
+                    .select("name email image phone dob gender address")
+                    .lean();
 
+                if (currentUser) {
+                    appointment.userData = {
+                        ...appointment.userData,
+                        name: currentUser.name || appointment.userData?.name,
+                        email: currentUser.email || appointment.userData?.email,
+                        image: currentUser.image || appointment.userData?.image,
+                        phone: currentUser.phone || appointment.userData?.phone,
+                        dob: currentUser.dob || appointment.userData?.dob,
+                        gender: currentUser.gender || appointment.userData?.gender,
+                        address: currentUser.address || appointment.userData?.address,
+                    };
+                }
+            }
+
+            // 2. Fetch latest doctor data
+            if (appointment.docId) {
+                const currentDoctor = await Doctor
+                    .findById(appointment.docId)
+                    .select("name email image speciality degree experience about fees address")
+                    .lean();
+
+                if (currentDoctor) {
+                    appointment.docData = {
+                        ...appointment.docData,
+                        name: currentDoctor.name || appointment.docData?.name,
+                        email: currentDoctor.email || appointment.docData?.email,
+                        image: currentDoctor.image || appointment.docData?.image,
+                        speciality: currentDoctor.speciality || appointment.docData?.speciality,
+                        degree: currentDoctor.degree || appointment.docData?.degree,
+                        experience: currentDoctor.experience || appointment.docData?.experience,
+                        about: currentDoctor.about || appointment.docData?.about,
+                        fees: currentDoctor.fees || appointment.docData?.fees,
+                        address: currentDoctor.address || appointment.docData?.address,
+                    };
+                }
+            }
+
+            return appointment;
+        })
+    );
 
     return res.status(200).json(
         new ApiResponse(
             200,
-            appointments,
+            updatedAppointments,
             "Appointments fetched successfully"
         )
     );
