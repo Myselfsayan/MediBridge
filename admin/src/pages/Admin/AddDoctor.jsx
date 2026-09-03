@@ -225,6 +225,7 @@ function AddDoctor() {
                         >
                             <option value="">Select Speciality</option>
                             <option value="General physician">General physician</option>
+                            <option value="Cardiologist">Cardiologist</option>
                             <option value="Gynecologist">Gynecologist</option>
                             <option value="Dermatologist">Dermatologist</option>
                             <option value="Pediatricians">Pediatricians</option>

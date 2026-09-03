@@ -5,17 +5,13 @@ import {
     Filter, 
     Stethoscope, 
     ArrowRight, 
-    CheckCircle2, 
     X, 
-    Search,
-    UserCheck,
-    ChevronRight,
-    Sparkles
 } from 'lucide-react';
 
 const specialties = [
     "General physician",
     "Gynecologist",
+    "Cardiologist",
     "Dermatologist",
     "Pediatricians",
     "Neurologist",
