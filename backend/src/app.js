@@ -4,6 +4,9 @@ import cookieParser from "cookie-parser";
 
 const app = express();
 
+// Trust reverse proxy headers on Render
+app.set("trust proxy", 1);
+
 // ================= MIDDLEWARE =================
 
 // Parse comma-separated CORS origins from env and include localhost fallbacks
