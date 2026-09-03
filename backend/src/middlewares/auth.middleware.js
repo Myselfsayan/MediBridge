@@ -78,7 +78,8 @@ export const verifyAdminJWT = asyncHandler(async (req, _, next) => {
     try {
 
         const token =
-            req.cookies?.adminAccessToken;
+            req.cookies?.adminAccessToken ||
+            req.header("Authorization")?.replace("Bearer ", "");
 
         if (!token) {
             throw new ApiError(
@@ -137,7 +138,8 @@ export const verifyDoctorJWT = asyncHandler(
             // ==========================================
 
             const token =
-                req.cookies?.doctorAccessToken;
+                req.cookies?.doctorAccessToken ||
+                req.header("Authorization")?.replace("Bearer ", "");
 
             if (!token) {
 

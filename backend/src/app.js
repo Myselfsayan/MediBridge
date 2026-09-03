@@ -6,10 +6,19 @@ const app = express();
 
 // ================= MIDDLEWARE =================
 
-// Parse comma-separated CORS origins from env
-const allowedOrigins = process.env.CORS_ORIGIN
-    ? process.env.CORS_ORIGIN.split(",").map(o => o.trim())
+// Parse comma-separated CORS origins from env and include localhost fallbacks
+const defaultOrigins = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:3000",
+    "http://localhost:5175",
+];
+
+const envOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(",").map(o => o.trim()).filter(Boolean)
     : [];
+
+const allowedOrigins = [...new Set([...envOrigins, ...defaultOrigins])];
 
 app.use(cors({
     origin: function (origin, callback) {
@@ -22,6 +31,7 @@ app.use(cors({
     },
     credentials: true
 }));
+
 
 app.use(express.json({ limit: "4mb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));

@@ -6,6 +6,10 @@ import appointmentModel from "../models/appointment.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 import { User } from "../models/user.model.js";
+import {
+    accessCookieOptions,
+    refreshCookieOptions
+} from "../utils/constant.js";
 
 
 // ==========================================
@@ -109,25 +113,6 @@ const addDoctor = asyncHandler(async (req, res) => {
     );
 });
 
-
-// ==========================================
-// COOKIE OPTIONS
-// ==========================================
-
-const accessCookieOptions = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    maxAge: 1000 * 60 * 60 * 24
-};
-
-
-const refreshCookieOptions = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    maxAge: 1000 * 60 * 60 * 24 * 7
-};
 
 
 // ==========================================

@@ -59,11 +59,7 @@ const Login = () => {
                         email: cleanEmail,
                         password: password
                     },
-                    {
-                        withCredentials: true,
-                        secure: true,
-                        sameSite: "none"
-                    }
+                    { withCredentials: true }
                 );
 
                 if (data.success) {

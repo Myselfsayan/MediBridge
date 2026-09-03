@@ -1,11 +1,15 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import {Doctor} from "../models/doctor.model.js";
-import {User} from "../models/user.model.js";
+import { Doctor } from "../models/doctor.model.js";
+import { User } from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { ApiError } from "../utils/ApiError.js";
 import appointmentModel from "../models/appointment.model.js";
+import {
+    accessCookieOptions,
+    refreshCookieOptions
+} from "../utils/constant.js";
 
 const changeAvailability = asyncHandler(async (req, res) => {
     const { doctorId } = req.body;
@@ -13,8 +17,7 @@ const changeAvailability = asyncHandler(async (req, res) => {
     const doctor = await Doctor.findById(doctorId);
 
     if (!doctor) {
-        res.status(404);
-        throw new Error("Doctor not found");
+        throw new ApiError(404, "Doctor not found");
     }
 
     doctor.available = !doctor.available;
@@ -42,12 +45,9 @@ const doctorList = asyncHandler(async (req, res) => {
 });
 const logoutDoctor = asyncHandler(async (req, res) => {
 
-    // Clear doctor authentication cookie
-    res.clearCookie("doctorAccessToken", {
-        httpOnly: true,
-        secure: false,
-        sameSite: "lax"
-    });
+    // Clear doctor authentication cookies
+    res.clearCookie("doctorAccessToken", accessCookieOptions);
+    res.clearCookie("doctorRefreshToken", refreshCookieOptions);
 
     return res.status(200).json(
         new ApiResponse(
@@ -57,6 +57,7 @@ const logoutDoctor = asyncHandler(async (req, res) => {
         )
     );
 });
+
 const getDoctorAppointments = asyncHandler(
     async (req, res) => {
 
@@ -177,26 +178,10 @@ const loginDoctor = asyncHandler(async (req, res) => {
         validateBeforeSave: false
     });
 
-    // HTTP-only cookie options
-    const cookieOptions = {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite:
-            process.env.NODE_ENV === "production"
-                ? "none"
-                : "lax"
-    };
-
     // Send tokens in HTTP-only cookies
     return res
-        .cookie("doctorAccessToken", accessToken, {
-            ...cookieOptions,
-            maxAge: 15 * 60 * 1000
-        })
-        .cookie("doctorRefreshToken", refreshToken, {
-            ...cookieOptions,
-            maxAge: 7 * 24 * 60 * 60 * 1000
-        })
+        .cookie("doctorAccessToken", accessToken, accessCookieOptions)
+        .cookie("doctorRefreshToken", refreshToken, refreshCookieOptions)
         .status(200)
         .json(
             new ApiResponse(
